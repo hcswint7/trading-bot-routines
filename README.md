@@ -1,6 +1,6 @@
 # trading-bot-routines
 
-## Voice emulator
+## Voice emulator 2
 
 A voice emulator that answers finance and law questions in a plain, direct
 expert voice — no story, no flourish. It follows six writing rules from George
@@ -8,10 +8,14 @@ Orwell and bans story-like framing. It ships with an auditor that grades a draft
 and a Ralph loop that drives generate → audit → revise until the draft reads
 clean.
 
-The skill lives at `.claude/skills/voice-emulator/`:
+This is a net-new skill built in this repo, named `voice-emulator-2` because it
+is not an edit of any prior voice-emulator skill — no such skill existed in
+this environment or repo to modify.
+
+The skill lives at `.claude/skills/voice-emulator-2/`:
 
 ```
-.claude/skills/voice-emulator/
+.claude/skills/voice-emulator-2/
   SKILL.md                 the voice spec (the six rules + anti-story directive)
   reference/
     orwell-rules.md        each rule, worked into concrete do/don't
@@ -45,25 +49,25 @@ questions, dramatic fragments, hype) as the top hard-fail category.
 Grade a draft:
 
 ```
-python3 .claude/skills/voice-emulator/audit.py <file>
-python3 .claude/skills/voice-emulator/audit.py <file> --json
+python3 .claude/skills/voice-emulator-2/audit.py <file>
+python3 .claude/skills/voice-emulator-2/audit.py <file> --json
 ```
 
 Run the loop over the recorded run (shows FAIL → FAIL → PASS):
 
 ```
-bash .claude/skills/voice-emulator/ralph_loop.sh --replay .claude/skills/voice-emulator/tests
+bash .claude/skills/voice-emulator-2/ralph_loop.sh --replay .claude/skills/voice-emulator-2/tests
 ```
 
 Live loop with your own generator command (it must rewrite the candidate file
 each round; it gets the question file as `$1` and the last report as `$2`):
 
 ```
-bash .claude/skills/voice-emulator/ralph_loop.sh --gen "<your-generator-cmd>" <candidate_file>
+bash .claude/skills/voice-emulator-2/ralph_loop.sh --gen "<your-generator-cmd>" <candidate_file>
 ```
 
 The skill is registered as a project skill and loads through Claude Code's
-`Skill` tool (`voice-emulator`) — it is not just files on disk; Claude can
+`Skill` tool (`voice-emulator-2`) — it is not just files on disk; Claude can
 invoke it directly to draft an answer in this voice before auditing it.
 
 ### Test runs
@@ -80,8 +84,8 @@ than hand-written. Same shape: a naive first draft tripped 11 hard findings
 (story opener, a simile, a cliché, four passive constructions, a rhetorical
 aside, a "not just X but Y" flourish); round 2 fixed all but one leftover
 passive; round 3 passed clean. See `tests/case_02_debt_lawsuit/audit_log.md`.
-Replay it: `bash .claude/skills/voice-emulator/ralph_loop.sh --replay
-.claude/skills/voice-emulator/tests/case_02_debt_lawsuit`.
+Replay it: `bash .claude/skills/voice-emulator-2/ralph_loop.sh --replay
+.claude/skills/voice-emulator-2/tests/case_02_debt_lawsuit`.
 
 Both cases converge the same way — many real findings on a naive draft, one or
 two left after a revision pass, zero on the final — which is the evidence that

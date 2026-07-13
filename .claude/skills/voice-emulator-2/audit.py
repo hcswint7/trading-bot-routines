@@ -5,7 +5,7 @@ Grades a piece of writing against the voice rules and prints findings. It exists
 to make each pass of the Ralph loop objective: a draft that trips a HARD rule
 gets exit code 1, a clean draft gets exit code 0.
 
-The rules come from the voice-emulator skill:
+The rules come from the voice-emulator-2 skill:
   - story-like / weird writing  (the top thing to catch)
   - Orwell rule i   no stale figures of speech / similes   (HARD)
   - Orwell rule iv  no passive voice                        (HARD)

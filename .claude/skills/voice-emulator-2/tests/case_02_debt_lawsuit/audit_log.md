@@ -1,7 +1,7 @@
 # Ralph-loop audit log — case 2 (debt lawsuit / default judgment)
 
 Question: see `question.md`. This run tests generalization: a second,
-unrelated finance/law question, invoked live through the `voice-emulator`
+unrelated finance/law question, invoked live through the `voice-emulator-2`
 skill (via Claude Code's `Skill` tool) rather than pre-written by hand.
 
 Replay this case:
