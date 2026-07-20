@@ -28,11 +28,22 @@
   --g-green: #34A853;
   --g-gray: #5F6368;
 
-  /* White aurora tokens (oklch components + intensity) */
-  --aur: 0.99 0.005 250;          /* cool white light */
+  /* Aurora tokens — dark: iridescent white; light: Google-color pastels */
   --aur-op: 0.20;
   --aur-blur: 48px;
-  --beam: oklch(1 0 0 / 0.06);
+  --cur1: oklch(0.95 0.04 262 / 0.9);   /* white with a blue whisper */
+  --cur2: oklch(0.95 0.04 27 / 0.9);    /* … red whisper */
+  --cur3: oklch(0.95 0.04 150 / 0.9);   /* … green whisper */
+  --cur4: oklch(0.96 0.04 90 / 0.9);    /* … gold whisper */
+  --orb1: oklch(0.97 0.02 262 / 0.8);
+  --orb2: oklch(0.97 0.02 90 / 0.8);
+  --orb3: oklch(0.97 0.02 150 / 0.8);
+  --beam-a: oklch(0.95 0.05 262 / 0.06);
+  --beam-b: oklch(0.95 0.05 27 / 0.06);
+  --star1: #fff;
+  --star2: oklch(0.95 0.05 262);
+  --star3: #fff;
+  --star4: oklch(0.95 0.05 90);
   --star-op: 0.65;
 
   --radius: 22px;
@@ -68,11 +79,22 @@
   --hair: oklch(0.2 0.02 262 / 0.10);
   --hair-strong: oklch(0.2 0.02 262 / 0.20);
   --blend: multiply;
-  --aur: 0.55 0.02 255;           /* silvery shade for light ground */
-  --aur-op: 0.10;
-  --aur-blur: 58px;
-  --beam: oklch(0.3 0.02 262 / 0.05);
-  --star-op: 0;
+  --aur-op: 0.36;
+  --aur-blur: 54px;
+  --cur1: oklch(0.72 0.15 262 / 0.9);   /* Google blue pastel */
+  --cur2: oklch(0.74 0.15 27 / 0.9);    /* red */
+  --cur3: oklch(0.75 0.14 150 / 0.9);   /* green */
+  --cur4: oklch(0.85 0.13 90 / 0.9);    /* yellow */
+  --orb1: oklch(0.76 0.12 262 / 0.8);
+  --orb2: oklch(0.86 0.11 90 / 0.8);
+  --orb3: oklch(0.77 0.12 150 / 0.8);
+  --beam-a: oklch(0.6 0.15 262 / 0.06);
+  --beam-b: oklch(0.62 0.17 27 / 0.06);
+  --star1: var(--g-blue);
+  --star2: var(--g-red);
+  --star3: var(--g-yellow);
+  --star4: var(--g-green);
+  --star-op: 0.55;
   --grain-opacity: 0.035;
   --shadow: 0 20px 45px -22px oklch(0.4 0.05 262 / 0.35);
   --chip-bg: oklch(0.2 0.02 262 / 0.05);
@@ -91,11 +113,22 @@
     --hair: oklch(0.2 0.02 262 / 0.10);
     --hair-strong: oklch(0.2 0.02 262 / 0.20);
     --blend: multiply;
-    --aur: 0.55 0.02 255;
-    --aur-op: 0.10;
-    --aur-blur: 58px;
-    --beam: oklch(0.3 0.02 262 / 0.05);
-    --star-op: 0;
+    --aur-op: 0.36;
+    --aur-blur: 54px;
+    --cur1: oklch(0.72 0.15 262 / 0.9);
+    --cur2: oklch(0.74 0.15 27 / 0.9);
+    --cur3: oklch(0.75 0.14 150 / 0.9);
+    --cur4: oklch(0.85 0.13 90 / 0.9);
+    --orb1: oklch(0.76 0.12 262 / 0.8);
+    --orb2: oklch(0.86 0.11 90 / 0.8);
+    --orb3: oklch(0.77 0.12 150 / 0.8);
+    --beam-a: oklch(0.6 0.15 262 / 0.06);
+    --beam-b: oklch(0.62 0.17 27 / 0.06);
+    --star1: var(--g-blue);
+    --star2: var(--g-red);
+    --star3: var(--g-yellow);
+    --star4: var(--g-green);
+    --star-op: 0.55;
     --grain-opacity: 0.035;
   }
 }
@@ -134,17 +167,17 @@ body {
 .curtain {
   position: absolute;
   width: 30vmax; height: 140vmax; top: -35vmax;
-  background: radial-gradient(46% 50% at 50% 50%, oklch(var(--aur) / 0.9), transparent 72%);
+  background: radial-gradient(46% 50% at 50% 50%, var(--cur), transparent 72%);
   filter: blur(var(--aur-blur));
   opacity: var(--aur-op);
   mix-blend-mode: var(--blend);
   transform-origin: 50% 18%;
   will-change: transform, opacity;
 }
-.c1 { left: 4%;  rotate: 16deg;  animation: sway1 14s cubic-bezier(0.45,0,0.55,1) infinite; }
-.c2 { left: 34%; rotate: 8deg;   animation: sway2 19s cubic-bezier(0.5,0,0.5,1) infinite; width: 24vmax; }
-.c3 { left: 58%; rotate: -6deg;  animation: sway3 16s cubic-bezier(0.45,0,0.55,1) infinite; }
-.c4 { left: 80%; rotate: -18deg; animation: sway1 23s cubic-bezier(0.5,0,0.5,1) infinite reverse; width: 26vmax; }
+.c1 { --cur: var(--cur1); left: 4%;  rotate: 16deg;  animation: sway1 14s cubic-bezier(0.45,0,0.55,1) infinite; }
+.c2 { --cur: var(--cur2); left: 34%; rotate: 8deg;   animation: sway2 19s cubic-bezier(0.5,0,0.5,1) infinite; width: 24vmax; }
+.c3 { --cur: var(--cur3); left: 58%; rotate: -6deg;  animation: sway3 16s cubic-bezier(0.45,0,0.55,1) infinite; }
+.c4 { --cur: var(--cur4); left: 80%; rotate: -18deg; animation: sway1 23s cubic-bezier(0.5,0,0.5,1) infinite reverse; width: 26vmax; }
 
 @keyframes sway1 {
   0%,100% { transform: translateX(0) scaleY(1); opacity: var(--aur-op); }
@@ -165,15 +198,15 @@ body {
 .blob {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%, oklch(var(--aur) / 0.8) 0%, transparent 66%);
+  background: radial-gradient(circle at 50% 50%, var(--orb) 0%, transparent 66%);
   filter: blur(calc(var(--aur-blur) + 10px));
   opacity: calc(var(--aur-op) * 0.9);
   mix-blend-mode: var(--blend);
   will-change: transform;
 }
-.b1 { width: 52vmax; height: 52vmax; top: -10%; left: -12%; animation: drift1 17s cubic-bezier(0.45,0,0.55,1) infinite; }
-.b2 { width: 40vmax; height: 40vmax; top: 16%; right: -12%; animation: drift2 21s cubic-bezier(0.5,0,0.5,1) infinite; }
-.b3 { width: 46vmax; height: 46vmax; bottom: -14%; left: 22%; animation: drift3 25s cubic-bezier(0.5,0,0.5,1) infinite; }
+.b1 { --orb: var(--orb1); width: 52vmax; height: 52vmax; top: -10%; left: -12%; animation: drift1 17s cubic-bezier(0.45,0,0.55,1) infinite; }
+.b2 { --orb: var(--orb2); width: 40vmax; height: 40vmax; top: 16%; right: -12%; animation: drift2 21s cubic-bezier(0.5,0,0.5,1) infinite; }
+.b3 { --orb: var(--orb3); width: 46vmax; height: 46vmax; bottom: -14%; left: 22%; animation: drift3 25s cubic-bezier(0.5,0,0.5,1) infinite; }
 
 @keyframes drift1 {
   0%,100% { transform: translate(0,0) scale(1); }
@@ -193,7 +226,7 @@ body {
 /* --- Light beam sweeping across the sky --- */
 .beam {
   position: absolute; inset: 0;
-  background: linear-gradient(115deg, transparent 41%, var(--beam) 50%, transparent 59%);
+  background: linear-gradient(115deg, transparent 40%, var(--beam-a) 47%, var(--beam-b) 53%, transparent 60%);
   background-size: 320% 100%;
   mix-blend-mode: var(--blend);
   animation: beamsweep 11s cubic-bezier(0.6,0,0.4,1) infinite;
@@ -206,9 +239,14 @@ body {
 /* --- Star field (dark theme only via --star-op) --- */
 .stars { position: absolute; inset: 0; opacity: var(--star-op); }
 .stars i {
-  position: absolute; border-radius: 50%; background: #fff;
+  position: absolute; border-radius: 50%; background: var(--star-ink, #fff);
   animation: twinkle var(--tw, 4s) ease-in-out var(--td, 0s) infinite;
 }
+/* dark: white stars (two faintly tinted) · light: Google-color confetti */
+.stars .s1 { --star-ink: var(--star1); }
+.stars .s2 { --star-ink: var(--star2); }
+.stars .s3 { --star-ink: var(--star3); }
+.stars .s4 { --star-ink: var(--star4); }
 @keyframes twinkle {
   0%,100% { opacity: 0.08; transform: scale(0.8); }
   50% { opacity: 0.8; transform: scale(1.15); }
@@ -1188,8 +1226,8 @@ const prefersReduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const wrap = document.getElementById('stars');
   let html = '';
   for (let i = 0; i < 26; i++) {
-    const s = (Math.random() * 1.6 + 0.8).toFixed(1);
-    html += `<i style="left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*100).toFixed(1)}%;width:${s}px;height:${s}px;--tw:${(Math.random()*4+2.5).toFixed(1)}s;--td:${(Math.random()*5).toFixed(1)}s"></i>`;
+    const s = (Math.random() * 1.8 + 1.0).toFixed(1);
+    html += `<i class="s${(i % 4) + 1}" style="left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*100).toFixed(1)}%;width:${s}px;height:${s}px;--tw:${(Math.random()*4+2.5).toFixed(1)}s;--td:${(Math.random()*5).toFixed(1)}s"></i>`;
   }
   wrap.innerHTML = html;
 })();
