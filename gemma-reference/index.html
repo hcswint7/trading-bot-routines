@@ -648,7 +648,7 @@ footer .dots { margin: 0 auto 12px; }
     <button class="tab" data-page="compare">Compare</button>
     <button class="tab" data-page="models">Models</button>
     <button class="tab" data-page="configure">Configure</button>
-    <button class="tab" data-page="prompts">Prompts</button>
+    <button class="tab" data-page="prompts">Prompts + Skills</button>
   </div>
 </nav>
 
@@ -928,6 +928,62 @@ footer .dots { margin: 0 auto 12px; }
     <p class="no-results" data-empty>No matching rows. Clear the search to see everything.</p>
   </section>
 
+  <section class="block acc-green" id="benchmark">
+    <span class="eyebrow"><span class="pip"></span> Measure, don't guess</span>
+    <h2>Benchmark — tune to your phone</h2>
+    <p>The benchmark screen (<code class="inline">Models Management → ⋮ → Benchmark Model</code>) is the one place you can turn "GPU or CPU? which model?" into a real number. Set the sliders to mimic a task's <em>token shape</em>, run it on GPU, then CPU, and compare. Its four knobs map to actual inference physics:</p>
+    <div class="grid g2">
+      <div class="mini glow">
+        <h4><span class="ico" style="background:var(--g-blue)">📥</span> Prefill tokens</h4>
+        <p>How fast the model <strong>reads your input</strong> — prompt, context, image/audio tokens, tool schemas. Parallel &amp; compute-heavy, so <strong>GPU usually wins</strong>. This is your time-to-first-token.</p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-green)">📤</span> Decode tokens</h4>
+        <p>How fast it <strong>writes output</strong>, one token at a time. Memory-bandwidth-bound — the streaming speed you actually feel. Long code &amp; transcripts live here.</p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-yellow)">🔁</span> Number of runs</h4>
+        <p>Repeats, for a stable median. <strong>3</strong> = quick read, <strong>5</strong> = confident. More runs = more heat &amp; battery, so keep it low for casual checks.</p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-red)">⚙️</span> Accelerator</h4>
+        <p>The thing you're A/B testing. Run identical settings on <strong>GPU then CPU</strong> and compare medians — the winner flips with model size and task.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:22px">Benchmark presets — match the task shape</h3>
+    <p>Set prefill/decode to roughly mirror the real task, then read the result straight into the <strong>Accel</strong> column of the config table above.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Real task</th><th>Prefill</th><th>Decode</th><th>Runs</th><th>What to watch</th></tr></thead>
+        <tbody>
+          <tr><td>AI Chat (casual)</td><td>128</td><td>256</td><td>5</td><td>Time-to-first-token + decode t/s (snappiness)</td></tr>
+          <tr><td>AI Chat + Thinking</td><td>256</td><td>1024</td><td>3</td><td>Decode t/s — Thinking Mode balloons the output</td></tr>
+          <tr><td>Prompt Lab (code)</td><td>512</td><td>1024</td><td>3</td><td>Both, plus peak memory</td></tr>
+          <tr><td>Ask Image</td><td>512</td><td>128</td><td>3</td><td>Prefill t/s + memory — <strong>GPU wins big</strong></td></tr>
+          <tr><td>Audio Scribe</td><td>128</td><td>1024</td><td>3</td><td><em>Sustained</em> decode t/s + throttling</td></tr>
+          <tr><td>Agent Skills</td><td>768</td><td>256</td><td>3</td><td>Prefill t/s — tool schemas re-fed every turn</td></tr>
+          <tr><td>Mobile Actions / Tiny Garden (270M)</td><td>128</td><td>64</td><td>5</td><td>Confirm <strong>CPU ≈ GPU → use CPU</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="no-results" data-empty>No matching rows. Clear the search to see everything.</p>
+    <p style="font-size:.85rem;color:var(--ink-faint);margin-top:10px">Keep prefill + decode under the model's window — the screen warns you (e.g. "512 vs 4000").</p>
+
+    <div class="callout warn">
+      <h4>🌡️ The throttle test</h4>
+      <p style="margin:0">Run the <em>same</em> benchmark twice, back-to-back. If run 2 is noticeably slower, your phone is <strong>thermally throttling</strong> — so long transcriptions and agent loops will degrade over time even when the first burst looks fast. Sustained speed matters more than peak.</p>
+    </div>
+    <div class="callout info">
+      <h4>⚙️ GPU isn't always the winner</h4>
+      <p style="margin:0">GPU has spin-up overhead that makes it <em>lose</em> on the 270M model and very short chats — which is exactly why the app lets you benchmark E4B on <strong>CPU</strong>. Never assume; test both.</p>
+    </div>
+    <div class="callout tip">
+      <h4>🧵 32K context is a trap</h4>
+      <p style="margin:0">Gemma 4 E2B supports up to 32K context, but <em>prefilling</em> that many tokens on-device is brutally slow and memory-hungry. Keep contexts lean, and watch peak memory against model size (E4B 3.66&nbsp;GB · 3n-E2B 3.39&nbsp;GB · E2B 2.59&nbsp;GB).</p>
+    </div>
+  </section>
+
   <section class="block acc-yellow" id="glossary">
     <span class="eyebrow"><span class="pip"></span> Plain-English</span>
     <h2>Parameter glossary</h2>
@@ -1009,9 +1065,76 @@ BEHAVIOR
       <pre><code id="p-mobile">TASK: Convert my request into exactly one structured function call using the available device actions. Fill every required argument from my message. If a required detail is missing, ask one short question instead of guessing. Do nothing beyond the single requested action.</code></pre>
     </div>
 
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-blue)"></span><h4>Cantonese / Mandarin translator — travel</h4><button class="copy" data-copy="p-translate">⧉ Copy</button></div>
+      <pre><code id="p-translate">TASK: Be my offline Cantonese/Mandarin travel translator.
+- Default target is Cantonese (Hong Kong). If I say "Mandarin", switch.
+- For each phrase give three lines: (1) the translation in characters, (2) romanization — Jyutping with tone numbers for Cantonese, Hanyu Pinyin for Mandarin, (3) a short natural back-translation so I can sanity-check the meaning.
+- Default to a polite register. Flag anything that would sound rude, too casual, or is easy to mispronounce into a different word.
+- If there's no clean local equivalent, say so and give the closest natural phrasing instead of a literal word-for-word.</code></pre>
+    </div>
+
     <div class="callout tip">
       <h4>ℹ️ Not a bug: Agent Skills' default prompt</h4>
       <p style="margin:0">When <strong>no MCP tools are loaded</strong>, Agent Skills automatically switches to a built-in <em>"skills only"</em> default system prompt. That's expected behavior — if your custom prompt seems to vanish there, load a tool/skill and it comes back.</p>
+    </div>
+  </section>
+
+  <section class="block acc-green glow" id="skills">
+    <span class="eyebrow"><span class="pip"></span> Extend the model</span>
+    <h2>Agent Skills — three tiers &amp; what to build</h2>
+    <p>Agent Skills pairs a <strong>planner</strong> (E2B/E4B, which reasons) with a <strong>function-caller</strong> (FunctionGemma, which emits the tool call) — that's the "2 models" on the tile. Don't just load an MCP server and hope; think in three tiers. And keep every tool <strong>description terse</strong> — schemas are re-fed each turn, so they inflate prefill (see the Agent Skills row in Benchmark).</p>
+    <div class="grid g3">
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-blue)">1</span> Prompt personas</h4>
+        <p><strong>No MCP, zero setup.</strong> Reusable system prompts for recurring jobs. Highest ROI — start here today.</p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-yellow)">2</span> Local function tools</h4>
+        <p>Deterministic calculators/converters the model <em>calls</em> for things LLMs botch (arithmetic, unit conversion). Offline-safe pure functions.</p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-green)">3</span> Multi-tile chains</h4>
+        <p>Workflows that hand output between tiles — Audio Scribe → summarize → flashcards, or Ask Image → extract → save.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px">🌏 Translation &amp; on-the-go — build these first</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Skill</th><th>Tier</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Cantonese / Mandarin translator</td><td><span class="pill rec">T1</span></td><td>Characters + Jyutping/Pinyin + back-translation. Persona is in the prompt library above — or pick the <strong>Translation / Travel</strong> preset in the config picker.</td></tr>
+          <tr><td>Situational phrasebook</td><td><span class="pill rec">T1</span></td><td>"Give me taxi / pharmacy / restaurant / directions phrases for Hong Kong" — the 6–8 lines you'll actually need, on a card.</td></tr>
+          <tr><td>Allergy / emergency card</td><td><span class="pill rec">T1</span></td><td>"I'm allergic to shellfish" in large, polite Cantonese characters to show staff — offline, no fumbling.</td></tr>
+          <tr><td>Menu decoder</td><td><span class="pill add">T3</span></td><td>Ask Image (menu) → translate + romanize → flag spicy / meat / allergens. Point the camera, read dinner.</td></tr>
+          <tr><td>Sign &amp; label reader</td><td><span class="pill add">T3</span></td><td>Ask Image (sign, packaging, ticket machine) → translate → explain what to actually do.</td></tr>
+          <tr><td>Number &amp; bargaining helper</td><td><span class="pill cond">T1/2</span></td><td>Say prices &amp; quantities in Cantonese, count money, haggle politely at the market.</td></tr>
+          <tr><td>Offline currency + tip calc</td><td><span class="pill cond">T2</span></td><td>Static HKD↔USD rate you set; convert, split bills, tip — no signal needed.</td></tr>
+          <tr><td>MTR / transit helper</td><td><span class="pill rec">T1</span></td><td>"How do I ask for the right line and exit to X?" — station, interchange &amp; exit phrasing.</td></tr>
+          <tr><td>Timezone converter</td><td><span class="pill cond">T2</span></td><td>HK ↔ home — "what time is my 3pm call back home, and is it too late to text?"</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="no-results" data-empty>No matching rows. Clear the search to see everything.</p>
+
+    <h3 style="margin-top:24px">🎒 Study, finance &amp; device</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Skill</th><th>Tier</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Climbing grade converter</td><td><span class="pill add">T2</span></td><td>YDS ↔ French ↔ V-scale ↔ Font. Models fumble this; a lookup table nails it.</td></tr>
+          <tr><td>Interest / loan / expense calc</td><td><span class="pill add">T2</span></td><td>Correct numbers for the private financial drafting — not hallucinated arithmetic.</td></tr>
+          <tr><td>Date-time → calendar extractor</td><td><span class="pill rec">T2/3</span></td><td>Parse "dinner Thu 7pm" into a clean struct and hand it to <strong>Mobile Actions</strong> (EventKit). Highest-leverage chain you can build.</td></tr>
+          <tr><td>Lecture → flashcards</td><td><span class="pill add">T3</span></td><td>Audio Scribe transcript → summarize → Anki-format Q&amp;A. Study from what you recorded.</td></tr>
+          <tr><td>Receipt logger</td><td><span class="pill add">T3</span></td><td>Ask Image (receipt) → extract line items → categorize → drop into your finance notes.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="no-results" data-empty>No matching rows. Clear the search to see everything.</p>
+    <div class="callout info">
+      <h4>🔑 Rule of thumb</h4>
+      <p style="margin:0">Do the <strong>T1 personas today</strong> — they're just prompts. Build a <strong>T2 tool</strong> only when the model keeps getting the same thing wrong (numbers, grades, rates). Save <strong>T3 chains</strong> for the two or three workflows you actually repeat every week.</p>
     </div>
   </section>
 
@@ -1036,7 +1159,8 @@ const APPENDS = {
   agent:  { name: "Agent Skills",       text: document.getElementById('p-agent').textContent },
   mobile: { name: "Mobile Actions",     text: document.getElementById('p-mobile').textContent },
   vision: { name: "Ask Image", text: "TASK: Answer strictly from what's visible in the image. Be specific about what you actually see; if something is ambiguous or cut off, say so. Don't invent text, brands, or details that aren't clearly present." },
-  creative: { name: "Prompt Lab — creative", text: "TASK: Prioritize originality, voice, and vivid detail over caution. Take creative risks, vary sentence rhythm, avoid clichés, and give me the piece itself — not a description of it." }
+  creative: { name: "Prompt Lab — creative", text: "TASK: Prioritize originality, voice, and vivid detail over caution. Take creative risks, vary sentence rhythm, avoid clichés, and give me the piece itself — not a description of it." },
+  translate: { name: "Cantonese / Mandarin translator", text: document.getElementById('p-translate').textContent }
 };
 const CORE = document.getElementById('p-core').textContent;
 
@@ -1056,7 +1180,9 @@ const TASKS = [
   { id:'agent', tile:'Agent Skills', accent:'var(--g-green)', maxTokens:2048, topK:20, topP:0.9, temp:0.3, accel:'GPU', think:'On', spec:'On', append:'agent',
     notes:'Reliable tool calls need low-ish temperature plus reasoning to plan the steps. Thinking on so the agent loop is deliberate, not reckless.' },
   { id:'mobile', tile:'Mobile Actions / Tiny Garden', accent:'var(--g-green)', maxTokens:512, topK:10, topP:0.9, temp:0.1, accel:'CPU', think:'Off', spec:'Off', append:'mobile',
-    notes:'FunctionGemma 270M outputs one structured call — keep it near-deterministic with a tiny token budget. The model is tiny, so CPU is fine and easy on battery.' }
+    notes:'FunctionGemma 270M outputs one structured call — keep it near-deterministic with a tiny token budget. The model is tiny, so CPU is fine and easy on battery.' },
+  { id:'translate', tile:'Translation / Travel', accent:'var(--g-blue)', maxTokens:1024, topK:20, topP:0.9, temp:0.2, accel:'GPU', think:'Off', spec:'On', append:'translate',
+    notes:'Low temperature keeps translations faithful, not creative. Thinking off for speed — you want the phrase, not an essay. Nudge temp up to ~0.4 only if you want more natural, less literal phrasing.' }
 ];
 
 /* ============================================================
