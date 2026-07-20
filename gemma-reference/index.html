@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="color-scheme" content="dark light" />
+<meta name="description" content="A personal, offline reference for getting the most out of Gemma 4 and the Google AI Edge Gallery app — model picks, per-task configs, and copy-paste system prompts." />
+<title>Gemma 4 · AI Edge Gallery Field Guide</title>
+<style>
+/* ============================================================
+   Google AI Edge Gallery — Gemma 4 Field Guide
+   Single-file, offline, motion-first reference.
+   Palette: Google Blue #4285F4 · Red #EA4335 · Yellow #FBBC05 · Green #34A853
+   ============================================================ */
+
+/* ---- Animatable gradient angle (drives rotating 4-color borders) ---- */
+@property --grad-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+:root {
+  /* Google brand colors */
+  --g-blue: #4285F4;
+  --g-red: #EA4335;
+  --g-yellow: #FBBC05;
+  --g-green: #34A853;
+  --g-gray: #5F6368;
+
+  /* OKLCH blob colors (for aurora) */
+  --blob-blue: oklch(0.62 0.19 262);
+  --blob-red: oklch(0.63 0.23 27);
+  --blob-yellow: oklch(0.84 0.16 90);
+  --blob-green: oklch(0.66 0.16 150);
+
+  --radius: 22px;
+  --radius-sm: 14px;
+  --maxw: 1080px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+
+  /* Dark theme (default — night owl) */
+  --bg-base: oklch(0.16 0.02 265);
+  --bg-deep: oklch(0.12 0.02 265);
+  --ink: oklch(0.96 0.01 250);
+  --ink-soft: oklch(0.78 0.02 250);
+  --ink-faint: oklch(0.62 0.02 250);
+  --card: oklch(0.22 0.02 262 / 0.55);
+  --card-solid: oklch(0.20 0.02 262);
+  --hair: oklch(1 0 0 / 0.10);
+  --hair-strong: oklch(1 0 0 / 0.18);
+  --blend: screen;
+  --blob-opacity: 0.55;
+  --blob-blur: 62px;
+  --grain-opacity: 0.055;
+  --shadow: 0 20px 50px -20px oklch(0 0 0 / 0.7);
+  --chip-bg: oklch(1 0 0 / 0.06);
+}
+
+:root[data-theme="light"] {
+  --bg-base: oklch(0.98 0.006 250);
+  --bg-deep: oklch(0.95 0.01 250);
+  --ink: oklch(0.24 0.03 262);
+  --ink-soft: oklch(0.40 0.03 262);
+  --ink-faint: oklch(0.55 0.02 262);
+  --card: oklch(1 0 0 / 0.62);
+  --card-solid: oklch(1 0 0 / 0.92);
+  --hair: oklch(0.2 0.02 262 / 0.10);
+  --hair-strong: oklch(0.2 0.02 262 / 0.20);
+  --blend: multiply;
+  --blob-opacity: 0.42;
+  --blob-blur: 72px;
+  --grain-opacity: 0.035;
+  --shadow: 0 20px 45px -22px oklch(0.4 0.05 262 / 0.35);
+  --chip-bg: oklch(0.2 0.02 262 / 0.05);
+}
+
+/* Fallback: honor OS preference before JS runs, if no explicit theme set */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --bg-base: oklch(0.98 0.006 250);
+    --bg-deep: oklch(0.95 0.01 250);
+    --ink: oklch(0.24 0.03 262);
+    --ink-soft: oklch(0.40 0.03 262);
+    --ink-faint: oklch(0.55 0.02 262);
+    --card: oklch(1 0 0 / 0.62);
+    --card-solid: oklch(1 0 0 / 0.92);
+    --hair: oklch(0.2 0.02 262 / 0.10);
+    --hair-strong: oklch(0.2 0.02 262 / 0.20);
+    --blend: multiply;
+    --blob-opacity: 0.42;
+    --grain-opacity: 0.035;
+  }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--bg-base);
+  line-height: 1.55;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   MOVING BACKGROUND — Aurora / mesh gradient blobs
+   ============================================================ */
+.aurora {
+  position: fixed;
+  inset: -20vmax;
+  z-index: -3;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% -10%, var(--bg-deep), transparent 60%),
+    var(--bg-base);
+}
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(var(--blob-blur));
+  opacity: var(--blob-opacity);
+  mix-blend-mode: var(--blend);
+  will-change: transform;
+}
+.b1 { width: 58vmax; height: 58vmax; top: -8%; left: -10%;
+  background: radial-gradient(circle at 50% 50%, var(--blob-blue) 0%, transparent 68%);
+  animation: drift1 26s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.b2 { width: 48vmax; height: 48vmax; top: 8%; right: -14%;
+  background: radial-gradient(circle at 50% 50%, var(--blob-red) 0%, transparent 68%);
+  animation: drift2 32s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.b3 { width: 44vmax; height: 44vmax; bottom: -12%; left: 4%;
+  background: radial-gradient(circle at 50% 50%, var(--blob-yellow) 0%, transparent 66%);
+  animation: drift3 29s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+.b4 { width: 54vmax; height: 54vmax; bottom: -14%; right: -8%;
+  background: radial-gradient(circle at 50% 50%, var(--blob-green) 0%, transparent 68%);
+  animation: drift4 36s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+.b5 { width: 34vmax; height: 34vmax; top: 40%; left: 38%;
+  background: radial-gradient(circle at 50% 50%, var(--blob-blue) 0%, transparent 62%);
+  animation: drift5 40s cubic-bezier(0.5, 0, 0.5, 1) infinite; opacity: calc(var(--blob-opacity) * 0.75); }
+
+@keyframes drift1 {
+  0%,100% { transform: translate(0,0) scale(1) rotate(0deg); }
+  33% { transform: translate(12vmax, 8vmax) scale(1.15) rotate(40deg); }
+  66% { transform: translate(-6vmax, 14vmax) scale(0.9) rotate(-20deg); }
+}
+@keyframes drift2 {
+  0%,100% { transform: translate(0,0) scale(1) rotate(0deg); }
+  50% { transform: translate(-14vmax, 12vmax) scale(1.2) rotate(-45deg); }
+}
+@keyframes drift3 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  40% { transform: translate(10vmax, -10vmax) scale(1.18); }
+  70% { transform: translate(16vmax, 6vmax) scale(0.95); }
+}
+@keyframes drift4 {
+  0%,100% { transform: translate(0,0) scale(1) rotate(0deg); }
+  50% { transform: translate(-12vmax, -14vmax) scale(1.1) rotate(30deg); }
+}
+@keyframes drift5 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(-18vmax, -8vmax) scale(1.25); }
+}
+
+/* ---- feTurbulence film-grain overlay ---- */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: overlay;
+}
+.grain rect { width: 100%; height: 100%; }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 clamp(16px, 4vw, 34px); }
+
+/* ---- Sticky frosted header ---- */
+header.top {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--card);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border-bottom: 1px solid var(--hair);
+  padding-top: env(safe-area-inset-top);
+}
+.top-inner {
+  max-width: var(--maxw); margin: 0 auto;
+  padding: 10px clamp(14px, 4vw, 34px);
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 11px; font-weight: 700; letter-spacing: -0.02em; font-size: 1.02rem; }
+.dots { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 26px; height: 26px; flex: none; animation: dotspin 18s linear infinite; }
+.dots span { border-radius: 3px; }
+.dots span:nth-child(1){ background: var(--g-red); }
+.dots span:nth-child(2){ background: var(--g-blue); }
+.dots span:nth-child(3){ background: var(--g-green); }
+.dots span:nth-child(4){ background: var(--g-yellow); }
+@keyframes dotspin { to { transform: rotate(360deg); } }
+.brand small { display:block; font-weight: 500; color: var(--ink-faint); font-size: 0.68rem; letter-spacing: 0.02em; }
+
+.top-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.icon-btn {
+  appearance: none; border: 1px solid var(--hair-strong); background: var(--chip-bg);
+  color: var(--ink); width: 40px; height: 40px; border-radius: 12px; cursor: pointer;
+  font-size: 1.05rem; display: grid; place-items: center; transition: transform .15s, background .2s;
+}
+.icon-btn:hover { transform: translateY(-1px); background: var(--hair); }
+.icon-btn:active { transform: scale(0.94); }
+
+/* ---- Search ---- */
+.searchbar { position: relative; flex: 1 1 220px; min-width: 160px; }
+.searchbar input {
+  width: 100%; padding: 10px 14px 10px 38px; border-radius: 12px;
+  border: 1px solid var(--hair-strong); background: var(--chip-bg); color: var(--ink);
+  font-size: 0.92rem; font-family: var(--font); outline: none; transition: border .2s, box-shadow .2s;
+}
+.searchbar input:focus { border-color: var(--g-blue); box-shadow: 0 0 0 3px oklch(0.62 0.19 262 / 0.25); }
+.searchbar::before { content: "⌕"; position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); font-size: 1.1rem; }
+
+/* ---- Tab nav ---- */
+nav.tabs {
+  position: sticky; top: calc(env(safe-area-inset-top) + 60px);
+  z-index: 40;
+  background: var(--card);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border-bottom: 1px solid var(--hair);
+}
+.tabs-inner { max-width: var(--maxw); margin: 0 auto; display: flex; gap: 4px; overflow-x: auto; padding: 8px clamp(10px,4vw,30px); scrollbar-width: none; }
+.tabs-inner::-webkit-scrollbar { display: none; }
+.tab {
+  appearance: none; border: none; background: transparent; color: var(--ink-soft);
+  padding: 9px 15px; border-radius: 11px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  white-space: nowrap; font-family: var(--font); position: relative; transition: color .2s, background .2s;
+}
+.tab:hover { color: var(--ink); background: var(--chip-bg); }
+.tab.active { color: var(--ink); background: var(--chip-bg); }
+.tab.active::after {
+  content: ""; position: absolute; left: 15px; right: 15px; bottom: 2px; height: 3px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+}
+
+/* ============================================================
+   PAGES + SECTIONS
+   ============================================================ */
+.page { display: none; animation: fadein .45s ease; padding: 26px 0 90px; }
+.page.active { display: block; }
+@keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+section.block {
+  position: relative;
+  background: var(--card);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid var(--hair);
+  border-radius: var(--radius);
+  padding: clamp(20px, 4vw, 34px);
+  margin: 22px 0;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  scroll-margin-top: 130px;
+}
+/* accent bar on the left edge of each block */
+section.block::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+  background: var(--accent, var(--g-blue));
+}
+.block.acc-blue { --accent: var(--g-blue); }
+.block.acc-red { --accent: var(--g-red); }
+.block.acc-yellow { --accent: var(--g-yellow); }
+.block.acc-green { --accent: var(--g-green); }
+.block.acc-multi::before { background: linear-gradient(var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green)); }
+
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent, var(--g-blue)); margin: 0 0 8px; }
+.eyebrow .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--accent, var(--g-blue)); box-shadow: 0 0 12px var(--accent, var(--g-blue)); }
+h1,h2,h3,h4 { letter-spacing: -0.025em; line-height: 1.15; margin: 0 0 12px; }
+h2 { font-size: clamp(1.5rem, 4.5vw, 2.1rem); }
+h3 { font-size: clamp(1.15rem, 3vw, 1.4rem); margin-top: 6px; }
+h4 { font-size: 1.02rem; }
+p { color: var(--ink-soft); margin: 0 0 14px; }
+a { color: var(--g-blue); text-decoration: none; border-bottom: 1px solid oklch(0.62 0.19 262 / 0.4); }
+a:hover { border-color: var(--g-blue); }
+.lead { font-size: clamp(1rem, 2.6vw, 1.12rem); color: var(--ink-soft); }
+strong { color: var(--ink); font-weight: 650; }
+code.inline { font-family: var(--mono); font-size: 0.86em; background: var(--chip-bg); padding: 2px 6px; border-radius: 6px; border: 1px solid var(--hair); }
+
+/* ---- Hero ---- */
+.hero {
+  position: relative; text-align: left; padding: clamp(30px, 7vw, 64px) clamp(22px, 5vw, 44px);
+  border-radius: 28px; overflow: hidden; margin: 22px 0;
+  background: var(--card);
+  backdrop-filter: blur(12px) saturate(1.3); -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid var(--hair);
+  box-shadow: var(--shadow);
+}
+.hero::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: conic-gradient(from var(--grad-angle),
+    oklch(0.62 0.19 262 / 0.16), oklch(0.63 0.23 27 / 0.16),
+    oklch(0.84 0.16 90 / 0.16), oklch(0.66 0.16 150 / 0.16), oklch(0.62 0.19 262 / 0.16));
+  animation: spin-grad 22s linear infinite;
+  mask: radial-gradient(120% 120% at 15% 0%, #000, transparent 72%);
+}
+.hero > * { position: relative; z-index: 1; }
+@keyframes spin-grad { to { --grad-angle: 360deg; } }
+
+.h-title { font-size: clamp(2.1rem, 8vw, 3.6rem); font-weight: 800; line-height: 1.02; margin: 8px 0 14px; letter-spacing: -0.04em; }
+.grad-text {
+  background: linear-gradient(100deg, var(--g-blue), var(--g-green) 40%, var(--g-yellow) 62%, var(--g-red));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; }
+.badge { font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--chip-bg); border: 1px solid var(--hair-strong); color: var(--ink-soft); display: inline-flex; align-items: center; gap: 6px; }
+.badge .d { width: 7px; height: 7px; border-radius: 50%; }
+
+/* ---- Rotating 4-color glow border (used on featured cards) ---- */
+.glow { position: relative; }
+.glow::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from var(--grad-angle), var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green), var(--g-blue));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: spin-grad 7s linear infinite;
+  opacity: 0.9;
+}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.table-scroll { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--hair); -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 520px; }
+thead th {
+  text-align: left; padding: 12px 14px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-faint); background: var(--chip-bg); position: sticky; top: 0; font-weight: 700; white-space: nowrap;
+}
+tbody td { padding: 12px 14px; border-top: 1px solid var(--hair); vertical-align: top; color: var(--ink-soft); }
+tbody tr:hover { background: var(--chip-bg); }
+tbody td:first-child { color: var(--ink); font-weight: 600; }
+.pill { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; letter-spacing: 0.02em; }
+.pill.add { background: oklch(0.66 0.16 150 / 0.18); color: oklch(0.72 0.16 150); border: 1px solid oklch(0.66 0.16 150 / 0.4); }
+.pill.skip { background: oklch(0.63 0.23 27 / 0.16); color: oklch(0.72 0.2 27); border: 1px solid oklch(0.63 0.23 27 / 0.38); }
+.pill.cond { background: oklch(0.84 0.16 90 / 0.16); color: oklch(0.72 0.14 85); border: 1px solid oklch(0.84 0.16 90 / 0.42); }
+.pill.rec { background: oklch(0.62 0.19 262 / 0.16); color: oklch(0.7 0.17 262); border: 1px solid oklch(0.62 0.19 262 / 0.42); }
+:root[data-theme="light"] .pill.add { color: oklch(0.5 0.16 150); }
+:root[data-theme="light"] .pill.skip { color: oklch(0.55 0.2 27); }
+:root[data-theme="light"] .pill.cond { color: oklch(0.52 0.13 75); }
+:root[data-theme="light"] .pill.rec { color: oklch(0.5 0.18 262); }
+
+.no-results { display: none; padding: 18px; text-align: center; color: var(--ink-faint); font-style: italic; }
+
+/* ============================================================
+   CALLOUT
+   ============================================================ */
+.callout {
+  position: relative; border-radius: var(--radius-sm); padding: 18px 20px 18px 22px; margin: 18px 0;
+  background: var(--chip-bg); border: 1px solid var(--hair);
+}
+.callout::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 4px; border-radius: 4px; background: var(--accent, var(--g-yellow)); }
+.callout h4 { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+.callout.warn { --accent: var(--g-red); }
+.callout.info { --accent: var(--g-blue); }
+.callout.tip { --accent: var(--g-green); }
+.callout ul { margin: 6px 0 0; padding-left: 20px; }
+.callout li { color: var(--ink-soft); margin: 5px 0; }
+
+/* ---- Two-column pros / limitations ---- */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.pcard { border-radius: var(--radius-sm); padding: 18px 20px; border: 1px solid var(--hair); background: var(--chip-bg); }
+.pcard h4 { display: flex; align-items: center; gap: 8px; }
+.pcard ul { margin: 8px 0 0; padding-left: 4px; list-style: none; }
+.pcard li { position: relative; padding-left: 24px; margin: 9px 0; color: var(--ink-soft); font-size: 0.92rem; }
+.pcard.pro li::before { content: "✓"; position: absolute; left: 0; top: 0; color: oklch(0.7 0.16 150); font-weight: 800; }
+.pcard.con li::before { content: "!"; position: absolute; left: 3px; top: 0; color: oklch(0.72 0.2 27); font-weight: 800; }
+
+/* ---- Feature cards grid ---- */
+.grid { display: grid; gap: 14px; }
+.grid.g2 { grid-template-columns: repeat(2, 1fr); }
+.grid.g3 { grid-template-columns: repeat(3, 1fr); }
+.mini {
+  border-radius: var(--radius-sm); padding: 16px 18px; border: 1px solid var(--hair); background: var(--chip-bg);
+}
+.mini h4 { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+.mini .ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-size: 0.95rem; flex: none; color: #fff; }
+.mini p { font-size: 0.86rem; margin: 0; }
+
+/* ============================================================
+   INTERACTIVE CONFIG PICKER
+   ============================================================ */
+.picker-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.picker-head label { font-weight: 600; color: var(--ink); }
+.select-wrap { position: relative; flex: 1 1 260px; }
+select#taskPick {
+  width: 100%; appearance: none; -webkit-appearance: none; font-family: var(--font); font-size: 1rem; font-weight: 600;
+  padding: 13px 42px 13px 16px; border-radius: 14px; border: 1px solid var(--hair-strong);
+  background: var(--card-solid); color: var(--ink); cursor: pointer; outline: none;
+}
+select#taskPick:focus { border-color: var(--g-blue); box-shadow: 0 0 0 3px oklch(0.62 0.19 262 / 0.25); }
+.select-wrap::after { content: "▾"; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ink-faint); }
+
+.config-panel { margin-top: 18px; border-radius: var(--radius); padding: 4px; }
+.config-inner {
+  border-radius: calc(var(--radius) - 4px); padding: 20px; background: var(--card-solid);
+}
+.cp-title { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.cp-dot { width: 12px; height: 12px; border-radius: 4px; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 16px 0; }
+.stat {
+  border-radius: 12px; padding: 12px 14px; background: var(--chip-bg); border: 1px solid var(--hair);
+  transition: transform .3s;
+}
+.stat .k { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); font-weight: 700; }
+.stat .v { font-size: 1.35rem; font-weight: 750; margin-top: 3px; letter-spacing: -0.02em; }
+.stat.hl .v { color: var(--accent); }
+.rationale { font-size: 0.9rem; color: var(--ink-soft); border-top: 1px dashed var(--hair-strong); padding-top: 14px; margin-top: 6px; }
+.rationale b { color: var(--ink); }
+
+/* ============================================================
+   CONFIG TABLE — expandable rows
+   ============================================================ */
+.cfg-row { cursor: pointer; }
+.cfg-row td:first-child { position: relative; padding-left: 30px; }
+.cfg-row td:first-child::before { content: "▸"; position: absolute; left: 12px; color: var(--ink-faint); transition: transform .2s; }
+.cfg-row.open td:first-child::before { transform: rotate(90deg); }
+.cfg-detail { display: none; }
+.cfg-detail.show { display: table-row; }
+.cfg-detail td { background: var(--chip-bg); font-size: 0.88rem; color: var(--ink-soft); padding: 14px 18px; border-top: none; }
+.cfg-detail b { color: var(--ink); }
+
+/* ============================================================
+   GLOSSARY ACCORDION
+   ============================================================ */
+.acc { border: 1px solid var(--hair); border-radius: var(--radius-sm); overflow: hidden; margin-top: 4px; }
+.acc + .acc { margin-top: 10px; }
+.acc summary {
+  list-style: none; cursor: pointer; padding: 15px 18px; font-weight: 650; color: var(--ink);
+  display: flex; align-items: center; gap: 12px; background: var(--chip-bg); user-select: none;
+}
+.acc summary::-webkit-details-marker { display: none; }
+.acc summary .plus { margin-left: auto; transition: transform .25s; color: var(--ink-faint); font-size: 1.2rem; }
+.acc[open] summary .plus { transform: rotate(45deg); }
+.acc summary .tag { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.acc .body { padding: 4px 18px 18px; color: var(--ink-soft); font-size: 0.92rem; animation: fadein .3s ease; }
+
+/* ============================================================
+   CODE / SYSTEM PROMPT BLOCKS
+   ============================================================ */
+.prompt-card { margin: 16px 0; border-radius: var(--radius-sm); border: 1px solid var(--hair); overflow: hidden; background: var(--card-solid); }
+.prompt-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--hair); background: var(--chip-bg); }
+.prompt-head .tag { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.prompt-head h4 { margin: 0; font-size: 0.95rem; }
+.prompt-head .copy {
+  margin-left: auto; appearance: none; border: 1px solid var(--hair-strong); background: var(--chip-bg);
+  color: var(--ink); font-size: 0.78rem; font-weight: 650; padding: 6px 13px; border-radius: 9px; cursor: pointer;
+  font-family: var(--font); display: inline-flex; align-items: center; gap: 6px; transition: all .18s;
+}
+.prompt-head .copy:hover { background: var(--hair); transform: translateY(-1px); }
+.prompt-head .copy.done { color: oklch(0.72 0.16 150); border-color: oklch(0.66 0.16 150 / 0.5); }
+pre { margin: 0; padding: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+pre code { font-family: var(--mono); font-size: 0.83rem; line-height: 1.6; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+
+/* ---- Setup steps ---- */
+.steps { counter-reset: s; list-style: none; padding: 0; margin: 6px 0 0; }
+.steps li { position: relative; padding: 4px 0 16px 46px; color: var(--ink-soft); }
+.steps li::before {
+  counter-increment: s; content: counter(s); position: absolute; left: 0; top: 0;
+  width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-weight: 800; font-size: 0.85rem; color: #fff;
+  background: linear-gradient(135deg, var(--g-blue), var(--g-green));
+}
+.steps li strong { display: block; color: var(--ink); }
+
+footer { text-align: center; padding: 30px 20px 60px; color: var(--ink-faint); font-size: 0.82rem; }
+footer .dots { margin: 0 auto 12px; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 720px) {
+  .two-col, .grid.g2, .grid.g3 { grid-template-columns: 1fr; }
+  nav.tabs { top: calc(env(safe-area-inset-top) + 108px); }
+  .top-inner { padding-bottom: 10px; }
+  .searchbar { order: 3; flex-basis: 100%; }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .blob, .dots, .hero::after, .glow::before { animation: none !important; }
+  .page { animation: none; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Moving background layers ===== -->
+<div class="aurora" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="blob b4"></div>
+  <div class="blob b5"></div>
+</div>
+<svg class="grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <filter id="grainFilter"><feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="2" stitchTiles="stitch"/></filter>
+  <rect filter="url(#grainFilter)"></rect>
+</svg>
+
+<!-- ===== Header ===== -->
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div>Gemma 4 Field Guide<small>Google AI Edge Gallery · personal reference</small></div>
+    </div>
+    <div class="searchbar">
+      <input id="search" type="search" placeholder="Filter tables & glossary… (e.g. temperature, Audio Scribe)" aria-label="Search the guide" />
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">🌙</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Tabs ===== -->
+<nav class="tabs" aria-label="Sections">
+  <div class="tabs-inner" id="tabs">
+    <button class="tab active" data-page="overview">Overview</button>
+    <button class="tab" data-page="compare">Compare</button>
+    <button class="tab" data-page="models">Models</button>
+    <button class="tab" data-page="configure">Configure</button>
+    <button class="tab" data-page="prompts">Prompts</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ============================================================
+     PAGE 1 — OVERVIEW
+     ============================================================ -->
+<div class="page active" id="page-overview">
+
+  <div class="hero glow" id="overview">
+    <span class="eyebrow"><span class="pip"></span> On-device · Offline · Private</span>
+    <div class="h-title">Google <span class="grad-text">AI Edge Gallery</span><br/>+ Gemma 4</div>
+    <p class="lead">A pocket lab for running open on-device models straight on your iPhone — no wifi, no accounts, nothing leaves the phone. This guide is my cheat-sheet for actually configuring it well: which models to keep, the per-task settings that matter, and the system prompts to paste in.</p>
+    <div class="badges">
+      <span class="badge"><span class="d" style="background:var(--g-blue)"></span> iOS · App Store</span>
+      <span class="badge"><span class="d" style="background:var(--g-green)"></span> Android · Play Store</span>
+      <span class="badge"><span class="d" style="background:var(--g-yellow)"></span> LiteRT runtime → also laptop/desktop</span>
+      <span class="badge"><span class="d" style="background:var(--g-red)"></span> Open-source</span>
+    </div>
+  </div>
+
+  <section class="block acc-blue">
+    <span class="eyebrow"><span class="pip"></span> What it is</span>
+    <h2>One-device AI, zero cloud</h2>
+    <p><strong>Google AI Edge Gallery</strong> is Google's open-source showcase app for running generative models <strong>entirely on-device</strong> through the LiteRT / MediaPipe runtime. Every inference — text, image, audio — happens on your own silicon. Nothing is uploaded, so it keeps working in airplane mode and your prompts stay yours.</p>
+    <p><em>What it's for:</em> a private, offline sandbox to chat, read images, transcribe audio, run agentic skills, and benchmark open models — and to import your own from Hugging Face when the defaults aren't enough.</p>
+    <div class="callout info">
+      <h4>📌 Source of truth</h4>
+      <p style="margin:0">Everything here is tuned for daily reference on an <strong>iPhone 17</strong>. Feature set and repo details from <a href="https://github.com/google-ai-edge/gallery" target="_blank" rel="noopener">github.com/google-ai-edge/gallery</a> and its <a href="https://github.com/google-ai-edge/gallery/wiki" target="_blank" rel="noopener">wiki</a>. Config numbers below are sensible starting points — nudge them to taste.</p>
+    </div>
+  </section>
+
+  <section class="block acc-green" id="features">
+    <span class="eyebrow"><span class="pip"></span> Feature reference</span>
+    <h2>What each tile does</h2>
+    <p>The home grid is a set of task tiles. Here's the quick map of function → when to reach for it.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Feature</th><th>Function</th><th>Best use case</th></tr></thead>
+        <tbody id="featureRows">
+          <tr><td>AI Chat</td><td>Multi-turn conversation; optional <em>Thinking Mode</em> shows the model's reasoning (Gemma 4 family first).</td><td>Everyday Q&amp;A, brainstorming, working through a problem step by step.</td></tr>
+          <tr><td>Ask Image</td><td>Multimodal vision — point the camera or pick a photo, ask about it.</td><td>Identify objects/gear, read a diagram, describe a scene, solve a visual puzzle.</td></tr>
+          <tr><td>Prompt Lab</td><td>Single-turn workspace with granular control over temperature, top-k, etc.</td><td>Code generation, rewriting, one-shot templates where you tune parameters.</td></tr>
+          <tr><td>Audio Scribe</td><td>Real-time on-device transcription &amp; translation of voice.</td><td>Lecture capture, voice memos, translating a spoken phrase offline.</td></tr>
+          <tr><td>Agent Skills</td><td>Let Gemma 4 complete agentic tasks, optionally calling loaded MCP tools/skills.</td><td>Multi-step jobs, tool use, studying how agent loops behave locally.</td></tr>
+          <tr><td>Mobile Actions</td><td>Natural language → structured function call → a real OS action (via FunctionGemma 270M).</td><td>"Turn on the flashlight", "make a 2:30 event", hands-free device control.</td></tr>
+          <tr><td>Tiny Garden</td><td>Playground built on the tiny 270M model — fast, low-power generative demos.</td><td>Instant, lightweight outputs where speed &gt; depth; testing the small model.</td></tr>
+          <tr><td>Performance Metrics</td><td>In-app benchmark — tokens/sec, time-to-first-token, memory for a model on your device.</td><td>Deciding GPU vs CPU and which model actually runs well on your iPhone.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="no-results" data-empty>No matching rows. Clear the search to see everything.</p>
+  </section>
+
+  <section class="block acc-red" id="mobile-actions">
+    <span class="eyebrow"><span class="pip"></span> iPhone specifics</span>
+    <h2>Mobile Actions on iOS</h2>
+    <p>This one deserves its own box because iOS behaves differently from Android.</p>
+    <div class="grid g2">
+      <div class="mini glow">
+        <h4><span class="ico" style="background:var(--g-red)">⚡</span> How it works</h4>
+        <p>Powered by <strong>FunctionGemma 270M</strong>: it translates a plain-English request into a <strong>structured function call</strong>, then fires a real OS action. Example commands:</p>
+        <p style="margin-top:8px">• <code class="inline">"Show me the San Francisco airport on map"</code><br/>• <code class="inline">"Create a calendar event for 2:30 PM tomorrow"</code><br/>• <code class="inline">"Turn on the flashlight"</code></p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-blue)">🔒</span> The iOS sandbox</h4>
+        <p>iOS is sandboxed tighter than Android, so Mobile Actions is limited to <strong>public Apple APIs</strong>: EventKit (calendar), MapKit (maps), and the flashlight toggle — not general device control. Calendar &amp; notification actions exist but are <strong>more limited than on Android</strong>.</p>
+      </div>
+    </div>
+    <div class="callout warn">
+      <h4>⚠️ Permissions &amp; benchmarking</h4>
+      <ul>
+        <li><strong>MCP tool calls ask first.</strong> The model requests permission before executing an action, with an <em>"Always allow"</em> option — expect a prompt the first time.</li>
+        <li><strong>Get numbers for YOUR phone.</strong> Run the in-app benchmark (<code class="inline">Models Management → top-left menu</code>) to see real performance specific to your iPhone 17 before trusting any config.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block acc-yellow" id="setup">
+    <span class="eyebrow"><span class="pip"></span> Quick setup</span>
+    <h2>Get running in 4 steps</h2>
+    <ol class="steps">
+      <li><strong>Install from the App Store</strong> — search "Google AI Edge Gallery" (iOS) or grab it on the Play Store for Android.</li>
+      <li><strong>Download a default model</strong> — start with Gemma 4 E2B or E4B from the in-app model list.</li>
+      <li><strong>Import extras from Hugging Face</strong> — search &amp; import add-on models directly inside the app. No manual sideloading needed anymore.</li>
+      <li><strong>Benchmark, then tune</strong> — run Performance Metrics, pick GPU or CPU, then set per-task configs (see the Configure tab).</li>
+    </ol>
+  </section>
+
+</div>
+
+<!-- ============================================================
+     PAGE 2 — COMPARE
+     ============================================================ -->
+<div class="page" id="page-compare">
+
+  <section class="block acc-blue" id="compare">
+    <span class="eyebrow"><span class="pip"></span> Where it fits</span>
+    <h2>How it differs — vs Google's own services</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Service</th><th>Key difference</th><th>Edge Gallery wins / loses</th></tr></thead>
+        <tbody>
+          <tr><td>Gemini (app / cloud)</td><td>Gemini runs huge models in the cloud; Edge Gallery runs small models locally.</td><td><strong>Wins</strong> on privacy &amp; offline; <strong>loses</strong> on raw capability &amp; knowledge freshness.</td></tr>
+          <tr><td>Google Photos AI</td><td>Photos does cloud-scale search/editing on your library.</td><td><strong>Wins</strong> on "nothing uploaded" image Q&amp;A; <strong>loses</strong> on library-wide indexing &amp; polish.</td></tr>
+          <tr><td>Android System AI</td><td>Baked into the OS with deep system hooks.</td><td><strong>Wins</strong> as an open, model-swappable sandbox; <strong>loses</strong> on seamless OS integration (esp. on iOS).</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block acc-red">
+    <span class="eyebrow"><span class="pip"></span> Where it fits</span>
+    <h2>…and vs other brands</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Alternative</th><th>Key difference</th><th>Edge Gallery wins / loses</th></tr></thead>
+        <tbody>
+          <tr><td>ChatGPT / Claude / Perplexity</td><td>Cloud assistants with frontier models &amp; live web.</td><td><strong>Wins</strong> on offline, private, free, no rate limits; <strong>loses</strong> on depth, context length, tooling.</td></tr>
+          <tr><td>LM Studio / Ollama</td><td>Desktop-class local model runners.</td><td><strong>Wins</strong> as a polished phone-native app with agentic tiles; <strong>loses</strong> on model size &amp; power vs a laptop.</td></tr>
+          <tr><td>Photo-gallery AI apps</td><td>Single-purpose vision/edit apps.</td><td><strong>Wins</strong> on being general-purpose + private; <strong>loses</strong> on task-specific features &amp; UI niceties.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block acc-green">
+    <span class="eyebrow"><span class="pip"></span> Honest take</span>
+    <h2>Pros &amp; limitations</h2>
+    <div class="two-col">
+      <div class="pcard pro">
+        <h4>👍 Pros</h4>
+        <ul>
+          <li>Fully offline — works with no wifi/signal, in airplane mode.</li>
+          <li>Private by design — prompts, images, audio never leave the device.</li>
+          <li>Free, no accounts, no rate limits, no token metering.</li>
+          <li>Model-swappable sandbox — import anything from Hugging Face.</li>
+          <li>Real agentic tiles (Agent Skills, Mobile Actions) to study tool use.</li>
+          <li>On-device benchmarking to right-size models per phone.</li>
+        </ul>
+      </div>
+      <div class="pcard con">
+        <h4>👎 Limitations</h4>
+        <ul>
+          <li>Small models — weaker reasoning &amp; shorter memory than cloud AI.</li>
+          <li>Knowledge is frozen at training time; no live web.</li>
+          <li>Heavy use drains battery &amp; warms the phone.</li>
+          <li>iOS sandbox limits Mobile Actions to a few public APIs.</li>
+          <li>Setup/tuning has a learning curve (that's what this guide is for).</li>
+          <li>Big models may not fit in memory on-device.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block acc-multi" id="usecases">
+    <span class="eyebrow"><span class="pip"></span> When it beats the cloud</span>
+    <h2>Offline use-case comparison</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Scenario</th><th>Cloud AI</th><th>Edge Gallery</th></tr></thead>
+        <tbody>
+          <tr><td>No wifi / no signal</td><td>❌ Dead without a connection</td><td>✅ Runs fully offline</td></tr>
+          <tr><td>Sensitive data</td><td>⚠️ Sent to a server</td><td>✅ Never leaves the phone</td></tr>
+          <tr><td>Rate limits / quotas</td><td>⚠️ Throttled / paywalled</td><td>✅ Unlimited local runs</td></tr>
+          <tr><td>Custom tool extensions</td><td>⚠️ Locked to their tools</td><td>✅ Load your own MCP skills</td></tr>
+          <tr><td>Studying agent design</td><td>⚠️ Black box</td><td>✅ Watch the loop locally</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <h4>🎯 My actual scenarios</h4>
+      <ul>
+        <li><strong>Climbing gear ID</strong> — Ask Image to name a cam/carabiner or read a spec at the crag with no signal.</li>
+        <li><strong>Lecture transcription</strong> — Audio Scribe captures a class offline, no recording uploaded anywhere.</li>
+        <li><strong>Private financial drafting</strong> — draft sensitive notes in Prompt Lab without a server ever seeing them.</li>
+        <li><strong>HKU translation</strong> — quick multilingual help while traveling with spotty data.</li>
+        <li><strong>Offline device control</strong> — Mobile Actions for flashlight / calendar / maps hands-free.</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============================================================
+     PAGE 3 — MODELS
+     ============================================================ -->
+<div class="page" id="page-models">
+
+  <section class="block acc-blue" id="models">
+    <span class="eyebrow"><span class="pip"></span> Model selection</span>
+    <h2>Default models — what to keep on the iPhone 17</h2>
+    <p>These ship in the in-app list. Keep the two Gemma 4 builds as daily drivers; the rest are situational.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Model</th><th>Params</th><th>Best for</th><th>Recommendation</th></tr></thead>
+        <tbody>
+          <tr><td>Gemma 4 E2B</td><td>~2B eff.</td><td>Fast everyday chat, quick tasks, tight on memory.</td><td><span class="pill rec">Daily driver</span> Snappy default.</td></tr>
+          <tr><td>Gemma 4 E4B</td><td>~4B eff.</td><td>Harder reasoning, code, longer answers, Thinking Mode.</td><td><span class="pill add">Keep</span> When you want quality over speed.</td></tr>
+          <tr><td>Gemma 3n E2B</td><td>~2B eff.</td><td>Prior-gen multimodal; good vision/audio fallback.</td><td><span class="pill cond">Optional</span> Keep if Gemma 4 vision misbehaves.</td></tr>
+          <tr><td>Gemma 3n E4B</td><td>~4B eff.</td><td>Prior-gen, stronger multimodal.</td><td><span class="pill cond">Optional</span> Backup for Ask Image / Audio.</td></tr>
+          <tr><td>Gemma 3 1B</td><td>~1B</td><td>Ultra-light text, lowest battery draw.</td><td><span class="pill cond">Situational</span> Speed &amp; battery over depth.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block acc-green">
+    <span class="eyebrow"><span class="pip"></span> Model selection</span>
+    <h2>Add-on models to import</h2>
+    <p>All officially supported now — import directly from Hugging Face <em>inside the app</em>, no manual sideloading.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Model</th><th>Verdict</th><th>Reason</th></tr></thead>
+        <tbody>
+          <tr><td>Phi-4-mini-instruct</td><td><span class="pill add">Add</span></td><td>Strong small-model reasoning &amp; instruction-following — great second brain alongside Gemma 4.</td></tr>
+          <tr><td>DeepSeek-R1-Distill-Qwen-1.5B</td><td><span class="pill add">Add</span></td><td>Tiny reasoning model — visible chain-of-thought for math/logic at very low cost.</td></tr>
+          <tr><td>Parakeet-tdt-0.6b</td><td><span class="pill add">Add</span></td><td>Dedicated speech-to-text — sharpens Audio Scribe accuracy for lectures.</td></tr>
+          <tr><td>Qwen2.5-1.5B-Instruct</td><td><span class="pill cond">Conditional</span></td><td>Best multilingual coverage — add for HKU travel / translation; skip if you don't need it.</td></tr>
+          <tr><td>7B+ general models</td><td><span class="pill skip">Skip</span></td><td>Usually won't fit / run smoothly in phone memory — leave these for a laptop.</td></tr>
+          <tr><td>Redundant 1–2B chat clones</td><td><span class="pill skip">Skip</span></td><td>Gemma 4 already covers general chat; extra near-duplicates just eat storage.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info">
+      <h4>💡 Rule of thumb</h4>
+      <p style="margin:0">Keep <strong>one strong generalist</strong> (Gemma 4 E4B), <strong>one speed model</strong> (E2B / Gemma 3 1B), and <strong>one specialist per job</strong> you actually do (Parakeet for audio, Qwen for languages). Everything else is storage you'll regret.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============================================================
+     PAGE 4 — CONFIGURE
+     ============================================================ -->
+<div class="page" id="page-configure">
+
+  <section class="block acc-multi glow" id="configs">
+    <span class="eyebrow"><span class="pip"></span> Interactive · pick a task</span>
+    <h2>Config picker</h2>
+    <p>Choose what you're about to do — this fills in the settings to punch into the model config, plus the system prompt to paste.</p>
+    <div class="picker-head">
+      <label for="taskPick">Task / tile:</label>
+      <div class="select-wrap">
+        <select id="taskPick" aria-label="Choose a task"></select>
+      </div>
+    </div>
+    <div class="config-panel glow" id="configPanel">
+      <div class="config-inner">
+        <div class="cp-title"><span class="cp-dot" id="cpDot"></span><h3 id="cpName" style="margin:0"></h3></div>
+        <p id="cpSub" style="margin:2px 0 0; font-size:.9rem"></p>
+        <div class="stat-grid" id="statGrid"></div>
+        <div class="rationale" id="cpNotes"></div>
+        <div class="prompt-card" style="margin-top:16px">
+          <div class="prompt-head">
+            <span class="tag" id="cpPromptTag"></span>
+            <h4>System prompt to paste</h4>
+            <button class="copy" data-copy="pickPrompt">⧉ Copy</button>
+          </div>
+          <pre><code id="pickPrompt"></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block acc-blue">
+    <span class="eyebrow"><span class="pip"></span> Full reference</span>
+    <h2>Config settings — every task</h2>
+    <p>Tap any row to expand the <em>why</em>. <span style="color:var(--ink-faint)">(Temp = Temperature · Spec = Speculative decoding)</span></p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Task / tile</th><th>Max Tok</th><th>Top-K</th><th>Top-P</th><th>Temp</th><th>Accel</th><th>Think</th><th>Spec</th></tr></thead>
+        <tbody id="cfgBody"><!-- rendered by JS --></tbody>
+      </table>
+    </div>
+    <p class="no-results" data-empty>No matching rows. Clear the search to see everything.</p>
+  </section>
+
+  <section class="block acc-yellow" id="glossary">
+    <span class="eyebrow"><span class="pip"></span> Plain-English</span>
+    <h2>Parameter glossary</h2>
+    <div class="callout info">
+      <h4>🧠 The one thing to remember</h4>
+      <p style="margin:0"><strong>Temperature reshapes the probability distribution BEFORE filtering; Top-K / Top-P decide WHICH tokens are eligible AFTER.</strong> Temperature changes how flat or peaky the odds are; Top-K/Top-P then trim the list of candidates the model may pick from.</p>
+    </div>
+
+    <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-blue)"></span>Max Tokens<span class="plus">+</span></summary><div class="body">The ceiling on how long a single response can be. Higher = room for full code files or long transcripts, but slower and more memory. Lower = snappier, forces brevity. Set it to the longest output you realistically need for that task.</div></details>
+
+    <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-red)"></span>Top-K<span class="plus">+</span></summary><div class="body">Keep only the K most-likely next tokens, then sample among them. <b>Low K (1–20)</b> = focused, safe, repetitive-leaning. <b>High K (40–64)</b> = more variety and surprise. K=1 is greedy (always the single top token).</div></details>
+
+    <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-green)"></span>Top-P (nucleus)<span class="plus">+</span></summary><div class="body">Keep the smallest set of tokens whose probabilities add up to P, then sample among them. <b>0.9</b> is a solid default; lower tightens focus, higher (0.95–0.99) loosens it. Works alongside Top-K — the stricter of the two wins.</div></details>
+
+    <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-yellow)"></span>Temperature<span class="plus">+</span></summary><div class="body">The creativity dial. <b>0–0.3</b> = precise, factual, deterministic (code, transcription, function calls). <b>0.7–0.9</b> = natural, conversational. <b>1.1–1.5</b> = wild, creative, less predictable. It stretches or flattens the odds <i>before</i> Top-K/Top-P filter.</div></details>
+
+    <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-blue)"></span>Accelerator (CPU / GPU)<span class="plus">+</span></summary><div class="body">Which chip runs the model. <b>GPU</b> is usually faster for larger models and worth it on the iPhone 17; <b>CPU</b> can be steadier for tiny models and lighter on heat/battery. Benchmark both — the winner depends on the model.</div></details>
+
+    <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-green)"></span>Speculative Decoding<span class="plus">+</span></summary><div class="body">A speed trick: a small "draft" guesses several tokens ahead and the main model verifies them in one pass, so you get more tokens/sec with identical output. On <b>Gemma 4 it uses native Multi-Token Prediction (MTP)</b> — toggle it with <code class="inline">"Support speculative decoding"</code> in config. Free speed for text; leave off for vision/audio where it doesn't apply.</div></details>
+
+    <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-red)"></span>Enable Thinking<span class="plus">+</span></summary><div class="body">Lets the model reason step-by-step before answering (Gemma 4's Thinking Mode). <b>On</b> for hard reasoning, code, agent planning — better answers, slower. <b>Off</b> for casual chat, transcription, quick actions — faster, less overthinking.</div></details>
+  </section>
+
+</div>
+
+<!-- ============================================================
+     PAGE 5 — PROMPTS
+     ============================================================ -->
+<div class="page" id="page-prompts">
+
+  <section class="block acc-multi" id="prompts">
+    <span class="eyebrow"><span class="pip"></span> Copy &amp; paste</span>
+    <h2>System prompt library</h2>
+    <p>Paste one of these into the model's system-prompt field. Start with the <strong>Core template</strong>, then bolt on a task-specific append line when you switch tiles.</p>
+
+    <div class="prompt-card glow">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-blue)"></span><h4>Core template — identity + behavior</h4><button class="copy" data-copy="p-core">⧉ Copy</button></div>
+      <pre><code id="p-core">You are a fast, private, on-device AI assistant running locally on my iPhone via Google AI Edge Gallery. You have no internet access — never claim to browse, fetch, or look anything up online. Work only from what I give you and what you already know.
+
+BEHAVIOR
+- Be direct and concise. Lead with the answer, then the reasoning only if it helps.
+- If you are unsure, or a request needs live/online data, say so plainly instead of guessing or inventing sources.
+- Match my level: skip filler and don't over-explain the basics unless I ask.
+- When I ask for code, return complete, runnable snippets — no placeholders, no "TODO".
+- Everything stays on this device, so be candid, specific, and useful.</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-green)"></span><h4>Lightweight alternative — low-maintenance</h4><button class="copy" data-copy="p-light">⧉ Copy</button></div>
+      <pre><code id="p-light">You are a concise, private, on-device assistant with no internet access. Answer directly, admit uncertainty, and never invent facts or sources. Keep it short unless I ask for more.</code></pre>
+    </div>
+
+    <h3 style="margin-top:26px">Task-specific append lines</h3>
+    <p>Add one of these <em>under</em> the Core template when you switch tasks.</p>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-yellow)"></span><h4>Prompt Lab — code</h4><button class="copy" data-copy="p-code">⧉ Copy</button></div>
+      <pre><code id="p-code">TASK: Act as a senior engineer. Return only complete, working code plus a one-line explanation. No placeholders, no "TODO". Prefer the standard library, handle the obvious edge cases, and note any assumptions in a short comment.</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-red)"></span><h4>Audio Scribe — transcription</h4><button class="copy" data-copy="p-audio">⧉ Copy</button></div>
+      <pre><code id="p-audio">TASK: Transcribe faithfully — preserve wording and speaker turns; keep fillers only if they carry meaning. Do not summarize or edit unless I ask. For translation, keep the original meaning and tone, and flag anything unclear as [inaudible].</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-blue)"></span><h4>Agent Skills — tool use</h4><button class="copy" data-copy="p-agent">⧉ Copy</button></div>
+      <pre><code id="p-agent">TASK: You may call the loaded tools/skills to complete the request. Plan the steps first, then call one tool at a time and wait for each result before the next. Only call a tool when it's actually needed — otherwise just answer. Confirm with me before any irreversible action.</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-green)"></span><h4>Mobile Actions / Tiny Garden — function call</h4><button class="copy" data-copy="p-mobile">⧉ Copy</button></div>
+      <pre><code id="p-mobile">TASK: Convert my request into exactly one structured function call using the available device actions. Fill every required argument from my message. If a required detail is missing, ask one short question instead of guessing. Do nothing beyond the single requested action.</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <h4>ℹ️ Not a bug: Agent Skills' default prompt</h4>
+      <p style="margin:0">When <strong>no MCP tools are loaded</strong>, Agent Skills automatically switches to a built-in <em>"skills only"</em> default system prompt. That's expected behavior — if your custom prompt seems to vanish there, load a tool/skill and it comes back.</p>
+    </div>
+  </section>
+
+</div>
+
+</main>
+
+<footer>
+  <div class="dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  Gemma 4 · AI Edge Gallery field guide — built for offline reference on iPhone 17.<br/>
+  Feature &amp; repo details: <a href="https://github.com/google-ai-edge/gallery" target="_blank" rel="noopener">google-ai-edge/gallery</a>. Config values are starting points — benchmark &amp; tune on your own device.
+</footer>
+
+<script>
+/* ============================================================
+   DATA — per-task configs + which append line to show
+   ============================================================ */
+const APPENDS = {
+  none:   { name: null, text: "" },
+  code:   { name: "Prompt Lab — code",  text: document.getElementById('p-code').textContent },
+  audio:  { name: "Audio Scribe",       text: document.getElementById('p-audio').textContent },
+  agent:  { name: "Agent Skills",       text: document.getElementById('p-agent').textContent },
+  mobile: { name: "Mobile Actions",     text: document.getElementById('p-mobile').textContent },
+  vision: { name: "Ask Image", text: "TASK: Answer strictly from what's visible in the image. Be specific about what you actually see; if something is ambiguous or cut off, say so. Don't invent text, brands, or details that aren't clearly present." },
+  creative: { name: "Prompt Lab — creative", text: "TASK: Prioritize originality, voice, and vivid detail over caution. Take creative risks, vary sentence rhythm, avoid clichés, and give me the piece itself — not a description of it." }
+};
+const CORE = document.getElementById('p-core').textContent;
+
+const TASKS = [
+  { id:'chat-fact', tile:'AI Chat — Factual', accent:'var(--g-blue)', maxTokens:2048, topK:20, topP:0.9, temp:0.2, accel:'GPU', think:'On', spec:'On', append:'none',
+    notes:'Low temperature keeps answers accurate and grounded; Thinking Mode helps it reason through the question. GPU for a smooth long answer.' },
+  { id:'chat-casual', tile:'AI Chat — Casual', accent:'var(--g-blue)', maxTokens:1536, topK:40, topP:0.95, temp:0.8, accel:'GPU', think:'Off', spec:'On',
+    append:'none', notes:'Higher temperature + wider sampling makes replies feel natural and varied. Thinking off keeps banter fast and unfussy.' },
+  { id:'code', tile:'Prompt Lab — Code', accent:'var(--g-yellow)', maxTokens:4096, topK:20, topP:0.9, temp:0.1, accel:'GPU', think:'On', spec:'On', append:'code',
+    notes:'Near-deterministic for correct, consistent code. Big token ceiling for whole functions/files; Thinking on for trickier logic.' },
+  { id:'creative', tile:'Prompt Lab — Creative', accent:'var(--g-yellow)', maxTokens:3072, topK:64, topP:0.98, temp:1.2, accel:'GPU', think:'Off', spec:'On', append:'creative',
+    notes:'High temperature and wide Top-K/Top-P open the floodgates for surprising, original writing. Thinking off so it stays loose.' },
+  { id:'ask-image', tile:'Ask Image', accent:'var(--g-red)', maxTokens:1024, topK:40, topP:0.9, temp:0.4, accel:'GPU', think:'Off', spec:'Off', append:'vision',
+    notes:'Moderate temperature for grounded description without dryness. Speculative decoding off — it targets text generation, not vision. GPU for throughput.' },
+  { id:'audio', tile:'Audio Scribe', accent:'var(--g-red)', maxTokens:2048, topK:1, topP:1.0, temp:0.0, accel:'GPU', think:'Off', spec:'Off', append:'audio',
+    notes:'Transcription must be faithful — greedy decoding (Top-K 1, temp 0) prevents the model from "improving" your words. Big ceiling for long recordings.' },
+  { id:'agent', tile:'Agent Skills', accent:'var(--g-green)', maxTokens:2048, topK:20, topP:0.9, temp:0.3, accel:'GPU', think:'On', spec:'On', append:'agent',
+    notes:'Reliable tool calls need low-ish temperature plus reasoning to plan the steps. Thinking on so the agent loop is deliberate, not reckless.' },
+  { id:'mobile', tile:'Mobile Actions / Tiny Garden', accent:'var(--g-green)', maxTokens:512, topK:10, topP:0.9, temp:0.1, accel:'CPU', think:'Off', spec:'Off', append:'mobile',
+    notes:'FunctionGemma 270M outputs one structured call — keep it near-deterministic with a tiny token budget. The model is tiny, so CPU is fine and easy on battery.' }
+];
+
+/* ============================================================
+   Render config table (shared source for search + expand)
+   ============================================================ */
+const cfgBody = document.getElementById('cfgBody');
+TASKS.forEach(t => {
+  const tr = document.createElement('tr');
+  tr.className = 'cfg-row';
+  tr.dataset.target = 'd-' + t.id;
+  tr.innerHTML = `<td>${t.tile}</td><td>${t.maxTokens}</td><td>${t.topK}</td><td>${t.topP}</td><td>${t.temp}</td><td>${t.accel}</td><td>${t.think}</td><td>${t.spec}</td>`;
+  const dr = document.createElement('tr');
+  dr.className = 'cfg-detail';
+  dr.id = 'd-' + t.id;
+  dr.innerHTML = `<td colspan="8"><b>Why:</b> ${t.notes}</td>`;
+  cfgBody.appendChild(tr); cfgBody.appendChild(dr);
+  tr.addEventListener('click', () => {
+    tr.classList.toggle('open');
+    dr.classList.toggle('show');
+  });
+});
+
+/* ============================================================
+   Interactive picker
+   ============================================================ */
+const taskPick = document.getElementById('taskPick');
+TASKS.forEach(t => {
+  const o = document.createElement('option');
+  o.value = t.id; o.textContent = t.tile; taskPick.appendChild(o);
+});
+
+function renderPicker(id) {
+  const t = TASKS.find(x => x.id === id) || TASKS[0];
+  document.documentElement.style.setProperty('--accent-live', t.accent);
+  document.getElementById('cpDot').style.background = t.accent;
+  document.getElementById('cpPromptTag').style.background = t.accent;
+  document.getElementById('cpName').textContent = t.tile;
+  const ap = APPENDS[t.append];
+  document.getElementById('cpSub').textContent = ap.name ? ('Core template + "' + ap.name + '" append') : 'Core template (no extra append needed)';
+
+  const stats = [
+    ['Max Tokens', t.maxTokens], ['Top-K', t.topK], ['Top-P', t.topP], ['Temp', t.temp],
+    ['Accel', t.accel], ['Thinking', t.think], ['Spec Decode', t.spec]
+  ];
+  const grid = document.getElementById('statGrid');
+  grid.innerHTML = '';
+  stats.forEach(([k,v], i) => {
+    const d = document.createElement('div');
+    d.className = 'stat' + (i === 3 ? ' hl' : '');
+    d.style.setProperty('--accent', t.accent);
+    d.innerHTML = `<div class="k">${k}</div><div class="v">${v}</div>`;
+    grid.appendChild(d);
+  });
+  document.getElementById('cpNotes').innerHTML = '<b>Why these settings:</b> ' + t.notes;
+
+  let prompt = CORE;
+  if (ap.text) prompt += '\n\n' + ap.text;
+  document.getElementById('pickPrompt').textContent = prompt;
+}
+taskPick.addEventListener('change', e => renderPicker(e.target.value));
+renderPicker(TASKS[0].id);
+
+/* ============================================================
+   Copy-to-clipboard
+   ============================================================ */
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const el = document.getElementById(btn.dataset.copy);
+    const text = el.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      document.body.removeChild(ta);
+    }
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copied'; btn.classList.add('done');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('done'); }, 1500);
+  });
+});
+
+/* ============================================================
+   Tab navigation
+   ============================================================ */
+const tabs = document.querySelectorAll('.tab');
+const pages = document.querySelectorAll('.page');
+function showPage(name) {
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.page === name));
+  pages.forEach(p => p.classList.toggle('active', p.id === 'page-' + name));
+  window.scrollTo(0, 0);
+  if (history.replaceState) history.replaceState(null, '', '#' + name);
+}
+tabs.forEach(t => t.addEventListener('click', () => showPage(t.dataset.page)));
+// deep-link on load
+const initial = (location.hash || '').replace('#','');
+if (initial && document.getElementById('page-' + initial)) showPage(initial);
+
+/* ============================================================
+   Theme toggle
+   ============================================================ */
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+function setTheme(mode) {
+  root.setAttribute('data-theme', mode);
+  themeBtn.textContent = mode === 'dark' ? '🌙' : '☀️';
+  try { localStorage.setItem('gemma-theme', mode); } catch(e) {}
+}
+let saved = null;
+try { saved = localStorage.getItem('gemma-theme'); } catch(e) {}
+setTheme(saved || 'dark');
+themeBtn.addEventListener('click', () => {
+  setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+
+/* ============================================================
+   Global search / filter — table rows + glossary cards
+   ============================================================ */
+const search = document.getElementById('search');
+const emptyMsgs = document.querySelectorAll('[data-empty]');
+search.addEventListener('input', () => {
+  const q = search.value.trim().toLowerCase();
+
+  // Which page(s) have visible matches — auto-jump if the active page has none
+  // Filter table rows (skip detail rows; they follow their parent)
+  document.querySelectorAll('tbody').forEach(tb => {
+    let shown = 0;
+    const rows = Array.from(tb.children);
+    rows.forEach(r => {
+      if (r.classList.contains('cfg-detail')) return; // handled with parent
+      const match = !q || r.textContent.toLowerCase().includes(q);
+      r.style.display = match ? '' : 'none';
+      if (r.classList.contains('cfg-row')) {
+        const det = document.getElementById(r.dataset.target);
+        if (det && !match) { det.style.display = 'none'; det.classList.remove('show'); r.classList.remove('open'); }
+        else if (det) { det.style.display = ''; }
+      }
+      if (match) shown++;
+    });
+    const emp = tb.closest('section')?.querySelector('[data-empty]');
+    if (emp) emp.style.display = (shown === 0 && q) ? 'block' : 'none';
+  });
+
+  // Filter glossary accordions
+  document.querySelectorAll('[data-glossary]').forEach(g => {
+    const match = !q || g.textContent.toLowerCase().includes(q);
+    g.style.display = match ? '' : 'none';
+    if (match && q) g.setAttribute('open','');
+  });
+});
+</script>
+</body>
+</html>
