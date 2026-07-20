@@ -28,11 +28,12 @@
   --g-green: #34A853;
   --g-gray: #5F6368;
 
-  /* OKLCH blob colors (for aurora) */
-  --blob-blue: oklch(0.62 0.19 262);
-  --blob-red: oklch(0.63 0.23 27);
-  --blob-yellow: oklch(0.84 0.16 90);
-  --blob-green: oklch(0.66 0.16 150);
+  /* White aurora tokens (oklch components + intensity) */
+  --aur: 0.99 0.005 250;          /* cool white light */
+  --aur-op: 0.20;
+  --aur-blur: 48px;
+  --beam: oklch(1 0 0 / 0.06);
+  --star-op: 0.65;
 
   --radius: 22px;
   --radius-sm: 14px;
@@ -51,8 +52,6 @@
   --hair: oklch(1 0 0 / 0.10);
   --hair-strong: oklch(1 0 0 / 0.18);
   --blend: screen;
-  --blob-opacity: 0.55;
-  --blob-blur: 62px;
   --grain-opacity: 0.055;
   --shadow: 0 20px 50px -20px oklch(0 0 0 / 0.7);
   --chip-bg: oklch(1 0 0 / 0.06);
@@ -69,8 +68,11 @@
   --hair: oklch(0.2 0.02 262 / 0.10);
   --hair-strong: oklch(0.2 0.02 262 / 0.20);
   --blend: multiply;
-  --blob-opacity: 0.42;
-  --blob-blur: 72px;
+  --aur: 0.55 0.02 255;           /* silvery shade for light ground */
+  --aur-op: 0.10;
+  --aur-blur: 58px;
+  --beam: oklch(0.3 0.02 262 / 0.05);
+  --star-op: 0;
   --grain-opacity: 0.035;
   --shadow: 0 20px 45px -22px oklch(0.4 0.05 262 / 0.35);
   --chip-bg: oklch(0.2 0.02 262 / 0.05);
@@ -89,7 +91,11 @@
     --hair: oklch(0.2 0.02 262 / 0.10);
     --hair-strong: oklch(0.2 0.02 262 / 0.20);
     --blend: multiply;
-    --blob-opacity: 0.42;
+    --aur: 0.55 0.02 255;
+    --aur-op: 0.10;
+    --aur-blur: 58px;
+    --beam: oklch(0.3 0.02 262 / 0.05);
+    --star-op: 0;
     --grain-opacity: 0.035;
   }
 }
@@ -109,63 +115,103 @@ body {
 }
 
 /* ============================================================
-   MOVING BACKGROUND — Aurora / mesh gradient blobs
+   MOVING BACKGROUND — White aurora / northern lights
+   Layers: drifting orbs → swaying curtains → beam sweep → stars
    ============================================================ */
 .aurora {
   position: fixed;
-  inset: -20vmax;
+  inset: -22vmax;
   z-index: -3;
   overflow: hidden;
   pointer-events: none;
+  will-change: transform;
   background:
     radial-gradient(120% 90% at 50% -10%, var(--bg-deep), transparent 60%),
     var(--bg-base);
 }
+
+/* --- Aurora curtains: tall sheets of light, swaying + breathing --- */
+.curtain {
+  position: absolute;
+  width: 30vmax; height: 140vmax; top: -35vmax;
+  background: radial-gradient(46% 50% at 50% 50%, oklch(var(--aur) / 0.9), transparent 72%);
+  filter: blur(var(--aur-blur));
+  opacity: var(--aur-op);
+  mix-blend-mode: var(--blend);
+  transform-origin: 50% 18%;
+  will-change: transform, opacity;
+}
+.c1 { left: 4%;  rotate: 16deg;  animation: sway1 14s cubic-bezier(0.45,0,0.55,1) infinite; }
+.c2 { left: 34%; rotate: 8deg;   animation: sway2 19s cubic-bezier(0.5,0,0.5,1) infinite; width: 24vmax; }
+.c3 { left: 58%; rotate: -6deg;  animation: sway3 16s cubic-bezier(0.45,0,0.55,1) infinite; }
+.c4 { left: 80%; rotate: -18deg; animation: sway1 23s cubic-bezier(0.5,0,0.5,1) infinite reverse; width: 26vmax; }
+
+@keyframes sway1 {
+  0%,100% { transform: translateX(0) scaleY(1); opacity: var(--aur-op); }
+  45% { transform: translateX(7vmax) scaleY(1.14) skewX(-4deg); opacity: calc(var(--aur-op) * 2.1); }
+  70% { transform: translateX(-3vmax) scaleY(0.94) skewX(3deg); opacity: calc(var(--aur-op) * 1.2); }
+}
+@keyframes sway2 {
+  0%,100% { transform: translateX(0) scaleY(1); opacity: calc(var(--aur-op) * 1.5); }
+  50% { transform: translateX(-9vmax) scaleY(1.22) skewX(5deg); opacity: calc(var(--aur-op) * 0.8); }
+}
+@keyframes sway3 {
+  0%,100% { transform: translateX(0) scaleY(1) skewX(0deg); opacity: var(--aur-op); }
+  35% { transform: translateX(5vmax) scaleY(1.18) skewX(-6deg); opacity: calc(var(--aur-op) * 1.9); }
+  75% { transform: translateX(-6vmax) scaleY(1.05) skewX(4deg); opacity: calc(var(--aur-op) * 1.4); }
+}
+
+/* --- Soft white orbs drifting behind the curtains --- */
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(var(--blob-blur));
-  opacity: var(--blob-opacity);
+  background: radial-gradient(circle at 50% 50%, oklch(var(--aur) / 0.8) 0%, transparent 66%);
+  filter: blur(calc(var(--aur-blur) + 10px));
+  opacity: calc(var(--aur-op) * 0.9);
   mix-blend-mode: var(--blend);
   will-change: transform;
 }
-.b1 { width: 58vmax; height: 58vmax; top: -8%; left: -10%;
-  background: radial-gradient(circle at 50% 50%, var(--blob-blue) 0%, transparent 68%);
-  animation: drift1 26s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-.b2 { width: 48vmax; height: 48vmax; top: 8%; right: -14%;
-  background: radial-gradient(circle at 50% 50%, var(--blob-red) 0%, transparent 68%);
-  animation: drift2 32s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-.b3 { width: 44vmax; height: 44vmax; bottom: -12%; left: 4%;
-  background: radial-gradient(circle at 50% 50%, var(--blob-yellow) 0%, transparent 66%);
-  animation: drift3 29s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
-.b4 { width: 54vmax; height: 54vmax; bottom: -14%; right: -8%;
-  background: radial-gradient(circle at 50% 50%, var(--blob-green) 0%, transparent 68%);
-  animation: drift4 36s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
-.b5 { width: 34vmax; height: 34vmax; top: 40%; left: 38%;
-  background: radial-gradient(circle at 50% 50%, var(--blob-blue) 0%, transparent 62%);
-  animation: drift5 40s cubic-bezier(0.5, 0, 0.5, 1) infinite; opacity: calc(var(--blob-opacity) * 0.75); }
+.b1 { width: 52vmax; height: 52vmax; top: -10%; left: -12%; animation: drift1 17s cubic-bezier(0.45,0,0.55,1) infinite; }
+.b2 { width: 40vmax; height: 40vmax; top: 16%; right: -12%; animation: drift2 21s cubic-bezier(0.5,0,0.5,1) infinite; }
+.b3 { width: 46vmax; height: 46vmax; bottom: -14%; left: 22%; animation: drift3 25s cubic-bezier(0.5,0,0.5,1) infinite; }
 
 @keyframes drift1 {
-  0%,100% { transform: translate(0,0) scale(1) rotate(0deg); }
-  33% { transform: translate(12vmax, 8vmax) scale(1.15) rotate(40deg); }
-  66% { transform: translate(-6vmax, 14vmax) scale(0.9) rotate(-20deg); }
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(14vmax, 9vmax) scale(1.18); }
+  66% { transform: translate(-7vmax, 15vmax) scale(0.88); }
 }
 @keyframes drift2 {
-  0%,100% { transform: translate(0,0) scale(1) rotate(0deg); }
-  50% { transform: translate(-14vmax, 12vmax) scale(1.2) rotate(-45deg); }
+  0%,100% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(-16vmax, 13vmax) scale(1.24); }
 }
 @keyframes drift3 {
   0%,100% { transform: translate(0,0) scale(1); }
-  40% { transform: translate(10vmax, -10vmax) scale(1.18); }
-  70% { transform: translate(16vmax, 6vmax) scale(0.95); }
+  40% { transform: translate(11vmax, -12vmax) scale(1.16); }
+  70% { transform: translate(17vmax, 7vmax) scale(0.94); }
 }
-@keyframes drift4 {
-  0%,100% { transform: translate(0,0) scale(1) rotate(0deg); }
-  50% { transform: translate(-12vmax, -14vmax) scale(1.1) rotate(30deg); }
+
+/* --- Light beam sweeping across the sky --- */
+.beam {
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 41%, var(--beam) 50%, transparent 59%);
+  background-size: 320% 100%;
+  mix-blend-mode: var(--blend);
+  animation: beamsweep 11s cubic-bezier(0.6,0,0.4,1) infinite;
 }
-@keyframes drift5 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  50% { transform: translate(-18vmax, -8vmax) scale(1.25); }
+@keyframes beamsweep {
+  0% { background-position: 130% 0; }
+  65%, 100% { background-position: -50% 0; }
+}
+
+/* --- Star field (dark theme only via --star-op) --- */
+.stars { position: absolute; inset: 0; opacity: var(--star-op); }
+.stars i {
+  position: absolute; border-radius: 50%; background: #fff;
+  animation: twinkle var(--tw, 4s) ease-in-out var(--td, 0s) infinite;
+}
+@keyframes twinkle {
+  0%,100% { opacity: 0.08; transform: scale(0.8); }
+  50% { opacity: 0.8; transform: scale(1.15); }
 }
 
 /* ---- feTurbulence film-grain overlay ---- */
@@ -178,6 +224,17 @@ body {
   mix-blend-mode: overlay;
 }
 .grain rect { width: 100%; height: 100%; }
+
+/* ---- Scroll progress bar (4-color) ---- */
+.progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 60;
+  background: linear-gradient(90deg, var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green));
+  transform-origin: 0 50%; transform: scaleX(0); pointer-events: none;
+}
+
+/* ---- Scroll-reveal (applied via JS; skipped for reduced motion) ---- */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s ease, transform .7s cubic-bezier(0.2,0.7,0.3,1); }
+.reveal.in { opacity: 1; transform: none; }
 
 /* ============================================================
    LAYOUT
@@ -238,7 +295,9 @@ nav.tabs {
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
   border-bottom: 1px solid var(--hair);
 }
-.tabs-inner { max-width: var(--maxw); margin: 0 auto; display: flex; gap: 4px; overflow-x: auto; padding: 8px clamp(10px,4vw,30px); scrollbar-width: none; }
+.tabs-inner { max-width: var(--maxw); margin: 0 auto; display: flex; gap: 4px; overflow-x: auto; padding: 8px clamp(10px,4vw,30px); scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22px, #000 calc(100% - 22px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 22px, #000 calc(100% - 22px), transparent); }
 .tabs-inner::-webkit-scrollbar { display: none; }
 .tab {
   appearance: none; border: none; background: transparent; color: var(--ink-soft);
@@ -267,7 +326,7 @@ section.block {
   border: 1px solid var(--hair);
   border-radius: var(--radius);
   padding: clamp(20px, 4vw, 34px);
-  margin: 22px 0;
+  margin: 26px 0;
   box-shadow: var(--shadow);
   overflow: hidden;
   scroll-margin-top: 130px;
@@ -285,14 +344,14 @@ section.block::before {
 
 .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent, var(--g-blue)); margin: 0 0 8px; }
 .eyebrow .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--accent, var(--g-blue)); box-shadow: 0 0 12px var(--accent, var(--g-blue)); }
-h1,h2,h3,h4 { letter-spacing: -0.025em; line-height: 1.15; margin: 0 0 12px; }
-h2 { font-size: clamp(1.5rem, 4.5vw, 2.1rem); }
+h1,h2,h3,h4 { letter-spacing: -0.025em; line-height: 1.15; margin: 0 0 12px; text-wrap: balance; }
+h2 { font-size: clamp(1.5rem, 4.5vw, 2.1rem); margin-bottom: 14px; }
 h3 { font-size: clamp(1.15rem, 3vw, 1.4rem); margin-top: 6px; }
 h4 { font-size: 1.02rem; }
 p { color: var(--ink-soft); margin: 0 0 14px; }
 a { color: var(--g-blue); text-decoration: none; border-bottom: 1px solid oklch(0.62 0.19 262 / 0.4); }
 a:hover { border-color: var(--g-blue); }
-.lead { font-size: clamp(1rem, 2.6vw, 1.12rem); color: var(--ink-soft); }
+.lead { font-size: clamp(1rem, 2.6vw, 1.12rem); color: var(--ink-soft); line-height: 1.65; max-width: 62ch; }
 strong { color: var(--ink); font-weight: 650; }
 code.inline { font-family: var(--mono); font-size: 0.86em; background: var(--chip-bg); padding: 2px 6px; border-radius: 6px; border: 1px solid var(--hair); }
 
@@ -319,8 +378,11 @@ code.inline { font-family: var(--mono); font-size: 0.86em; background: var(--chi
 .h-title { font-size: clamp(2.1rem, 8vw, 3.6rem); font-weight: 800; line-height: 1.02; margin: 8px 0 14px; letter-spacing: -0.04em; }
 .grad-text {
   background: linear-gradient(100deg, var(--g-blue), var(--g-green) 40%, var(--g-yellow) 62%, var(--g-red));
+  background-size: 220% 100%;
   -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: shimmer 9s ease-in-out infinite;
 }
+@keyframes shimmer { 0%,100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
 .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; }
 .badge { font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--chip-bg); border: 1px solid var(--hair-strong); color: var(--ink-soft); display: inline-flex; align-items: center; gap: 6px; }
 .badge .d { width: 7px; height: 7px; border-radius: 50%; }
@@ -393,7 +455,7 @@ tbody td:first-child { color: var(--ink); font-weight: 600; }
 }
 .mini h4 { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
 .mini .ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-size: 0.95rem; flex: none; color: #fff; }
-.mini p { font-size: 0.86rem; margin: 0; }
+.mini p { font-size: 0.89rem; line-height: 1.55; margin: 0; }
 
 /* ============================================================
    INTERACTIVE CONFIG PICKER
@@ -418,8 +480,9 @@ select#taskPick:focus { border-color: var(--g-blue); box-shadow: 0 0 0 3px oklch
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 16px 0; }
 .stat {
   border-radius: 12px; padding: 12px 14px; background: var(--chip-bg); border: 1px solid var(--hair);
-  transition: transform .3s;
+  animation: statin .4s cubic-bezier(0.2,0.7,0.3,1) both;
 }
+@keyframes statin { from { opacity: 0; transform: translateY(9px) scale(0.97); } to { opacity: 1; transform: none; } }
 .stat .k { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); font-weight: 700; }
 .stat .v { font-size: 1.35rem; font-weight: 750; margin-top: 3px; letter-spacing: -0.02em; }
 .stat.hl .v { color: var(--accent); }
@@ -459,7 +522,7 @@ select#taskPick:focus { border-color: var(--g-blue); box-shadow: 0 0 0 3px oklch
 .prompt-card { margin: 16px 0; border-radius: var(--radius-sm); border: 1px solid var(--hair); overflow: hidden; background: var(--card-solid); }
 .prompt-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--hair); background: var(--chip-bg); }
 .prompt-head .tag { width: 10px; height: 10px; border-radius: 3px; flex: none; }
-.prompt-head h4 { margin: 0; font-size: 0.95rem; }
+.prompt-head h4 { margin: 0; font-size: 0.95rem; flex: 1; min-width: 0; }
 .prompt-head .copy {
   margin-left: auto; appearance: none; border: 1px solid var(--hair-strong); background: var(--chip-bg);
   color: var(--ink); font-size: 0.78rem; font-weight: 650; padding: 6px 13px; border-radius: 9px; cursor: pointer;
@@ -497,8 +560,9 @@ footer .dots { margin: 0 auto 12px; }
    REDUCED MOTION
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-  .blob, .dots, .hero::after, .glow::before { animation: none !important; }
+  .blob, .curtain, .beam, .stars i, .dots, .hero::after, .glow::before, .grad-text, .stat { animation: none !important; }
   .page { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
   html { scroll-behavior: auto; }
 }
 </style>
@@ -506,12 +570,17 @@ footer .dots { margin: 0 auto 12px; }
 <body>
 
 <!-- ===== Moving background layers ===== -->
-<div class="aurora" aria-hidden="true">
+<div class="progress" id="progressBar" aria-hidden="true"></div>
+<div class="aurora" id="aurora" aria-hidden="true">
   <div class="blob b1"></div>
   <div class="blob b2"></div>
   <div class="blob b3"></div>
-  <div class="blob b4"></div>
-  <div class="blob b5"></div>
+  <div class="curtain c1"></div>
+  <div class="curtain c2"></div>
+  <div class="curtain c3"></div>
+  <div class="curtain c4"></div>
+  <div class="beam"></div>
+  <div class="stars" id="stars"></div>
 </div>
 <svg class="grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
   <filter id="grainFilter"><feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="2" stitchTiles="stitch"/></filter>
@@ -526,7 +595,7 @@ footer .dots { margin: 0 auto 12px; }
       <div>Gemma 4 Field Guide<small>Google AI Edge Gallery · personal reference</small></div>
     </div>
     <div class="searchbar">
-      <input id="search" type="search" placeholder="Filter tables & glossary… (e.g. temperature, Audio Scribe)" aria-label="Search the guide" />
+      <input id="search" type="search" placeholder="Filter tables &amp; glossary…" aria-label="Search the guide" />
     </div>
     <div class="top-actions">
       <button class="icon-btn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">🌙</button>
@@ -835,7 +904,7 @@ footer .dots { margin: 0 auto 12px; }
 
     <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-green)"></span>Top-P (nucleus)<span class="plus">+</span></summary><div class="body">Keep the smallest set of tokens whose probabilities add up to P, then sample among them. <b>0.9</b> is a solid default; lower tightens focus, higher (0.95–0.99) loosens it. Works alongside Top-K — the stricter of the two wins.</div></details>
 
-    <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-yellow)"></span>Temperature<span class="plus">+</span></summary><div class="body">The creativity dial. <b>0–0.3</b> = precise, factual, deterministic (code, transcription, function calls). <b>0.7–0.9</b> = natural, conversational. <b>1.1–1.5</b> = wild, creative, less predictable. It stretches or flattens the odds <i>before</i> Top-K/Top-P filter.</div></details>
+    <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-yellow)"></span>Temperature<span class="plus">+</span></summary><div class="body">The creativity dial. <b>0–0.3</b> = precise, factual, deterministic (code, transcription, function calls). <b>0.7–0.9</b> = natural, conversational. <b>~1.0–1.1</b> = wild, creative, less predictable — the practical ceiling for small on-device models, which fall apart above it. It stretches or flattens the odds <i>before</i> Top-K/Top-P filter.</div></details>
 
     <details class="acc" data-glossary><summary><span class="tag" style="background:var(--g-blue)"></span>Accelerator (CPU / GPU)<span class="plus">+</span></summary><div class="body">Which chip runs the model. <b>GPU</b> is usually faster for larger models and worth it on the iPhone 17; <b>CPU</b> can be steadier for tiny models and lighter on heat/battery. Benchmark both — the winner depends on the model.</div></details>
 
@@ -865,12 +934,18 @@ BEHAVIOR
 - If you are unsure, or a request needs live/online data, say so plainly instead of guessing or inventing sources.
 - Match my level: skip filler and don't over-explain the basics unless I ask.
 - When I ask for code, return complete, runnable snippets — no placeholders, no "TODO".
+- Format with light Markdown (short lists, code fences) when it makes the answer clearer.
 - Everything stays on this device, so be candid, specific, and useful.</code></pre>
     </div>
 
     <div class="prompt-card">
       <div class="prompt-head"><span class="tag" style="background:var(--g-green)"></span><h4>Lightweight alternative — low-maintenance</h4><button class="copy" data-copy="p-light">⧉ Copy</button></div>
       <pre><code id="p-light">You are a concise, private, on-device assistant with no internet access. Answer directly, admit uncertainty, and never invent facts or sources. Keep it short unless I ask for more.</code></pre>
+    </div>
+
+    <div class="callout info">
+      <h4>📏 Match the prompt to the model size</h4>
+      <p style="margin:0">Long system prompts eat context and can <em>dilute</em> instruction-following on small models. On <strong>E2B (or Gemma 3 1B)</strong> the lightweight prompt often behaves better than the full template; save the full Core template for <strong>E4B</strong>, where there's headroom to actually follow all of it.</p>
     </div>
 
     <h3 style="margin-top:26px">Task-specific append lines</h3>
@@ -934,12 +1009,12 @@ const TASKS = [
     append:'none', notes:'Higher temperature + wider sampling makes replies feel natural and varied. Thinking off keeps banter fast and unfussy.' },
   { id:'code', tile:'Prompt Lab — Code', accent:'var(--g-yellow)', maxTokens:4096, topK:20, topP:0.9, temp:0.1, accel:'GPU', think:'On', spec:'On', append:'code',
     notes:'Near-deterministic for correct, consistent code. Big token ceiling for whole functions/files; Thinking on for trickier logic.' },
-  { id:'creative', tile:'Prompt Lab — Creative', accent:'var(--g-yellow)', maxTokens:3072, topK:64, topP:0.98, temp:1.2, accel:'GPU', think:'Off', spec:'On', append:'creative',
-    notes:'High temperature and wide Top-K/Top-P open the floodgates for surprising, original writing. Thinking off so it stays loose.' },
+  { id:'creative', tile:'Prompt Lab — Creative', accent:'var(--g-yellow)', maxTokens:3072, topK:64, topP:0.98, temp:1.1, accel:'GPU', think:'Off', spec:'On', append:'creative',
+    notes:'High temperature and wide Top-K/Top-P open the floodgates for surprising, original writing — but small on-device models start to unravel past ~1.1, so this sits at the ceiling rather than beyond it. Thinking off so it stays loose.' },
   { id:'ask-image', tile:'Ask Image', accent:'var(--g-red)', maxTokens:1024, topK:40, topP:0.9, temp:0.4, accel:'GPU', think:'Off', spec:'Off', append:'vision',
     notes:'Moderate temperature for grounded description without dryness. Speculative decoding off — it targets text generation, not vision. GPU for throughput.' },
-  { id:'audio', tile:'Audio Scribe', accent:'var(--g-red)', maxTokens:2048, topK:1, topP:1.0, temp:0.0, accel:'GPU', think:'Off', spec:'Off', append:'audio',
-    notes:'Transcription must be faithful — greedy decoding (Top-K 1, temp 0) prevents the model from "improving" your words. Big ceiling for long recordings.' },
+  { id:'audio', tile:'Audio Scribe', accent:'var(--g-red)', maxTokens:4096, topK:1, topP:1.0, temp:0.0, accel:'GPU', think:'Off', spec:'Off', append:'audio',
+    notes:'Transcription must be faithful — greedy decoding (Top-K 1, temp 0) prevents the model from "improving" your words. 4096 tokens leaves room for a full lecture block; drop it for short memos if output feels slow.' },
   { id:'agent', tile:'Agent Skills', accent:'var(--g-green)', maxTokens:2048, topK:20, topP:0.9, temp:0.3, accel:'GPU', think:'On', spec:'On', append:'agent',
     notes:'Reliable tool calls need low-ish temperature plus reasoning to plan the steps. Thinking on so the agent loop is deliberate, not reckless.' },
   { id:'mobile', tile:'Mobile Actions / Tiny Garden', accent:'var(--g-green)', maxTokens:512, topK:10, topP:0.9, temp:0.1, accel:'CPU', think:'Off', spec:'Off', append:'mobile',
@@ -994,6 +1069,7 @@ function renderPicker(id) {
     const d = document.createElement('div');
     d.className = 'stat' + (i === 3 ? ' hl' : '');
     d.style.setProperty('--accent', t.accent);
+    d.style.animationDelay = (i * 45) + 'ms';
     d.innerHTML = `<div class="k">${k}</div><div class="v">${v}</div>`;
     grid.appendChild(d);
   });
@@ -1003,8 +1079,14 @@ function renderPicker(id) {
   if (ap.text) prompt += '\n\n' + ap.text;
   document.getElementById('pickPrompt').textContent = prompt;
 }
-taskPick.addEventListener('change', e => renderPicker(e.target.value));
-renderPicker(TASKS[0].id);
+taskPick.addEventListener('change', e => {
+  renderPicker(e.target.value);
+  try { localStorage.setItem('gemma-task', e.target.value); } catch(err) {}
+});
+let savedTask = null;
+try { savedTask = localStorage.getItem('gemma-task'); } catch(err) {}
+if (savedTask && TASKS.some(t => t.id === savedTask)) taskPick.value = savedTask;
+renderPicker(taskPick.value || TASKS[0].id);
 
 /* ============================================================
    Copy-to-clipboard
@@ -1095,6 +1177,52 @@ search.addEventListener('input', () => {
     if (match && q) g.setAttribute('open','');
   });
 });
+
+/* ============================================================
+   Motion: stars, scroll parallax + progress, reveals
+   ============================================================ */
+const prefersReduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Star field — randomized once per load
+(function(){
+  const wrap = document.getElementById('stars');
+  let html = '';
+  for (let i = 0; i < 26; i++) {
+    const s = (Math.random() * 1.6 + 0.8).toFixed(1);
+    html += `<i style="left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*100).toFixed(1)}%;width:${s}px;height:${s}px;--tw:${(Math.random()*4+2.5).toFixed(1)}s;--td:${(Math.random()*5).toFixed(1)}s"></i>`;
+  }
+  wrap.innerHTML = html;
+})();
+
+// Scroll: 4-color progress bar + gentle aurora parallax (rAF-throttled)
+const auroraEl = document.getElementById('aurora');
+const barEl = document.getElementById('progressBar');
+let rafPending = false;
+function onScroll() {
+  if (rafPending) return;
+  rafPending = true;
+  requestAnimationFrame(() => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    barEl.style.transform = 'scaleX(' + (max > 0 ? Math.min(scrollY / max, 1) : 0) + ')';
+    if (!prefersReduce) auroraEl.style.transform = 'translateY(' + (scrollY * -0.05) + 'px)';
+    rafPending = false;
+  });
+}
+addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+
+// Scroll-reveal: blocks rise in as they enter the viewport
+if (!prefersReduce && 'IntersectionObserver' in window) {
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, { threshold: 0.06 });
+  document.querySelectorAll('section.block, .hero').forEach(el => {
+    el.classList.add('reveal');
+    io.observe(el);
+  });
+}
 </script>
 </body>
 </html>
