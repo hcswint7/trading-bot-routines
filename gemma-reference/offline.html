@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="color-scheme" content="dark light" />
+<meta name="description" content="Offline, no-JavaScript reference for Gemma 4 and the Google AI Edge Gallery app — model picks, per-task configs, and copy-paste system prompts. Built for Quick Look / Files on iPhone." />
+<title>Gemma 4 · AI Edge Gallery Field Guide (Offline)</title>
+<style>
+/* ============================================================
+   Google AI Edge Gallery — Gemma 4 Field Guide — OFFLINE TWIN
+   Zero JavaScript. Pure HTML + CSS so it renders fully in iOS
+   Quick Look / Files preview, which never executes <script>.
+   Palette: Google Blue #4285F4 · Red #EA4335 · Yellow #FBBC05 · Green #34A853
+   ============================================================ */
+
+@property --grad-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+:root {
+  --g-blue: #4285F4;
+  --g-red: #EA4335;
+  --g-yellow: #FBBC05;
+  --g-green: #34A853;
+  --g-gray: #5F6368;
+
+  /* Aurora tokens — dark: iridescent white; light: Google-color pastels.
+     No JS sets a theme attribute here — light/dark is driven purely by
+     prefers-color-scheme below, so it follows iOS system Appearance. */
+  --aur-op: 0.20;
+  --aur-blur: 48px;
+  --cur1: oklch(0.95 0.04 262 / 0.9);
+  --cur2: oklch(0.95 0.04 27 / 0.9);
+  --cur3: oklch(0.95 0.04 150 / 0.9);
+  --cur4: oklch(0.96 0.04 90 / 0.9);
+  --orb1: oklch(0.97 0.02 262 / 0.8);
+  --orb2: oklch(0.97 0.02 90 / 0.8);
+  --orb3: oklch(0.97 0.02 150 / 0.8);
+  --beam-a: oklch(0.95 0.05 262 / 0.06);
+  --beam-b: oklch(0.95 0.05 27 / 0.06);
+  --star1: #fff;
+  --star2: oklch(0.95 0.05 262);
+  --star3: #fff;
+  --star4: oklch(0.95 0.05 90);
+  --star-op: 0.65;
+
+  --radius: 22px;
+  --radius-sm: 14px;
+  --maxw: 1080px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+
+  --bg-base: oklch(0.16 0.02 265);
+  --bg-deep: oklch(0.12 0.02 265);
+  --ink: oklch(0.96 0.01 250);
+  --ink-soft: oklch(0.78 0.02 250);
+  --ink-faint: oklch(0.62 0.02 250);
+  --card: oklch(0.22 0.02 262 / 0.55);
+  --card-solid: oklch(0.20 0.02 262);
+  --hair: oklch(1 0 0 / 0.10);
+  --hair-strong: oklch(1 0 0 / 0.18);
+  --blend: screen;
+  --grain-opacity: 0.055;
+  --shadow: 0 20px 50px -20px oklch(0 0 0 / 0.7);
+  --chip-bg: oklch(1 0 0 / 0.06);
+}
+
+/* Light theme — driven entirely by the OS, no toggle button/JS needed */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-base: oklch(0.98 0.006 250);
+    --bg-deep: oklch(0.95 0.01 250);
+    --ink: oklch(0.24 0.03 262);
+    --ink-soft: oklch(0.40 0.03 262);
+    --ink-faint: oklch(0.55 0.02 262);
+    --card: oklch(1 0 0 / 0.62);
+    --card-solid: oklch(1 0 0 / 0.92);
+    --hair: oklch(0.2 0.02 262 / 0.10);
+    --hair-strong: oklch(0.2 0.02 262 / 0.20);
+    --blend: multiply;
+    --aur-op: 0.36;
+    --aur-blur: 54px;
+    --cur1: oklch(0.72 0.15 262 / 0.9);
+    --cur2: oklch(0.74 0.15 27 / 0.9);
+    --cur3: oklch(0.75 0.14 150 / 0.9);
+    --cur4: oklch(0.85 0.13 90 / 0.9);
+    --orb1: oklch(0.76 0.12 262 / 0.8);
+    --orb2: oklch(0.86 0.11 90 / 0.8);
+    --orb3: oklch(0.77 0.12 150 / 0.8);
+    --beam-a: oklch(0.6 0.15 262 / 0.06);
+    --beam-b: oklch(0.62 0.17 27 / 0.06);
+    --star1: var(--g-blue);
+    --star2: var(--g-red);
+    --star3: var(--g-yellow);
+    --star4: var(--g-green);
+    --star-op: 0.55;
+    --grain-opacity: 0.035;
+    --shadow: 0 20px 45px -22px oklch(0.4 0.05 262 / 0.35);
+    --chip-bg: oklch(0.2 0.02 262 / 0.05);
+  }
+  .pill.add { color: oklch(0.5 0.16 150); }
+  .pill.skip { color: oklch(0.55 0.2 27); }
+  .pill.cond { color: oklch(0.52 0.13 75); }
+  .pill.rec { color: oklch(0.5 0.18 262); }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--bg-base);
+  line-height: 1.55;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   MOVING BACKGROUND — White / Google-color aurora (pure CSS)
+   ============================================================ */
+.aurora {
+  position: fixed;
+  inset: -22vmax;
+  z-index: -3;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% -10%, var(--bg-deep), transparent 60%),
+    var(--bg-base);
+}
+.curtain {
+  position: absolute;
+  width: 30vmax; height: 140vmax; top: -35vmax;
+  background: radial-gradient(46% 50% at 50% 50%, var(--cur), transparent 72%);
+  filter: blur(var(--aur-blur));
+  opacity: var(--aur-op);
+  mix-blend-mode: var(--blend);
+  transform-origin: 50% 18%;
+}
+.c1 { --cur: var(--cur1); left: 4%;  rotate: 16deg;  animation: sway1 14s cubic-bezier(0.45,0,0.55,1) infinite; }
+.c2 { --cur: var(--cur2); left: 34%; rotate: 8deg;   animation: sway2 19s cubic-bezier(0.5,0,0.5,1) infinite; width: 24vmax; }
+.c3 { --cur: var(--cur3); left: 58%; rotate: -6deg;  animation: sway3 16s cubic-bezier(0.45,0,0.55,1) infinite; }
+.c4 { --cur: var(--cur4); left: 80%; rotate: -18deg; animation: sway1 23s cubic-bezier(0.5,0,0.5,1) infinite reverse; width: 26vmax; }
+
+@keyframes sway1 {
+  0%,100% { transform: translateX(0) scaleY(1); opacity: var(--aur-op); }
+  45% { transform: translateX(7vmax) scaleY(1.14) skewX(-4deg); opacity: calc(var(--aur-op) * 2.1); }
+  70% { transform: translateX(-3vmax) scaleY(0.94) skewX(3deg); opacity: calc(var(--aur-op) * 1.2); }
+}
+@keyframes sway2 {
+  0%,100% { transform: translateX(0) scaleY(1); opacity: calc(var(--aur-op) * 1.5); }
+  50% { transform: translateX(-9vmax) scaleY(1.22) skewX(5deg); opacity: calc(var(--aur-op) * 0.8); }
+}
+@keyframes sway3 {
+  0%,100% { transform: translateX(0) scaleY(1) skewX(0deg); opacity: var(--aur-op); }
+  35% { transform: translateX(5vmax) scaleY(1.18) skewX(-6deg); opacity: calc(var(--aur-op) * 1.9); }
+  75% { transform: translateX(-6vmax) scaleY(1.05) skewX(4deg); opacity: calc(var(--aur-op) * 1.4); }
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, var(--orb) 0%, transparent 66%);
+  filter: blur(calc(var(--aur-blur) + 10px));
+  opacity: calc(var(--aur-op) * 0.9);
+  mix-blend-mode: var(--blend);
+}
+.b1 { --orb: var(--orb1); width: 52vmax; height: 52vmax; top: -10%; left: -12%; animation: drift1 17s cubic-bezier(0.45,0,0.55,1) infinite; }
+.b2 { --orb: var(--orb2); width: 40vmax; height: 40vmax; top: 16%; right: -12%; animation: drift2 21s cubic-bezier(0.5,0,0.5,1) infinite; }
+.b3 { --orb: var(--orb3); width: 46vmax; height: 46vmax; bottom: -14%; left: 22%; animation: drift3 25s cubic-bezier(0.5,0,0.5,1) infinite; }
+
+@keyframes drift1 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(14vmax, 9vmax) scale(1.18); }
+  66% { transform: translate(-7vmax, 15vmax) scale(0.88); }
+}
+@keyframes drift2 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(-16vmax, 13vmax) scale(1.24); }
+}
+@keyframes drift3 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  40% { transform: translate(11vmax, -12vmax) scale(1.16); }
+  70% { transform: translate(17vmax, 7vmax) scale(0.94); }
+}
+
+.beam {
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 40%, var(--beam-a) 47%, var(--beam-b) 53%, transparent 60%);
+  background-size: 320% 100%;
+  mix-blend-mode: var(--blend);
+  animation: beamsweep 11s cubic-bezier(0.6,0,0.4,1) infinite;
+}
+@keyframes beamsweep {
+  0% { background-position: 130% 0; }
+  65%, 100% { background-position: -50% 0; }
+}
+
+/* Star field — fixed positions (no JS to randomize at runtime) */
+.stars { position: absolute; inset: 0; opacity: var(--star-op); }
+.stars i {
+  position: absolute; border-radius: 50%; background: var(--star-ink, #fff);
+  animation: twinkle var(--tw, 4s) ease-in-out var(--td, 0s) infinite;
+}
+.stars .s1 { --star-ink: var(--star1); }
+.stars .s2 { --star-ink: var(--star2); }
+.stars .s3 { --star-ink: var(--star3); }
+.stars .s4 { --star-ink: var(--star4); }
+@keyframes twinkle {
+  0%,100% { opacity: 0.08; transform: scale(0.8); }
+  50% { opacity: 0.8; transform: scale(1.15); }
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: overlay;
+}
+.grain rect { width: 100%; height: 100%; }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 clamp(16px, 4vw, 34px); }
+
+/* Header + nav share ONE sticky wrapper, so nav always sits directly
+   below the header's real rendered height — no matter whether the
+   brand/badge wrap to a second line on a narrow phone. Two independently
+   -sticky bars with a guessed offset would overlap when that happens. */
+.stickytop { position: sticky; top: 0; z-index: 50; }
+
+header.top {
+  background: var(--card);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border-bottom: 1px solid var(--hair);
+  padding-top: env(safe-area-inset-top);
+}
+.top-inner {
+  max-width: var(--maxw); margin: 0 auto;
+  padding: 10px clamp(14px, 4vw, 34px);
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 11px; font-weight: 700; letter-spacing: -0.02em; font-size: 1.02rem; }
+.dots { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 26px; height: 26px; flex: none; animation: dotspin 18s linear infinite; }
+.dots span { border-radius: 3px; }
+.dots span:nth-child(1){ background: var(--g-red); }
+.dots span:nth-child(2){ background: var(--g-blue); }
+.dots span:nth-child(3){ background: var(--g-green); }
+.dots span:nth-child(4){ background: var(--g-yellow); }
+@keyframes dotspin { to { transform: rotate(360deg); } }
+.brand small { display:block; font-weight: 500; color: var(--ink-faint); font-size: 0.68rem; letter-spacing: 0.02em; }
+.offline-badge { margin-left: auto; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); border: 1px solid var(--hair-strong); border-radius: 999px; padding: 5px 11px; white-space: nowrap; }
+
+/* ---- Anchor nav (pure CSS: <a href="#id">, no JS page-switching) ---- */
+nav.anchor-nav {
+  background: var(--card);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border-bottom: 1px solid var(--hair);
+}
+.anchor-inner { max-width: var(--maxw); margin: 0 auto; display: flex; gap: 4px; overflow-x: auto; padding: 8px clamp(10px,4vw,30px); scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22px, #000 calc(100% - 22px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 22px, #000 calc(100% - 22px), transparent); }
+.anchor-inner::-webkit-scrollbar { display: none; }
+.anchor-inner a {
+  border: none; background: transparent; color: var(--ink-soft);
+  padding: 9px 15px; border-radius: 11px; font-size: 0.9rem; font-weight: 600;
+  white-space: nowrap; font-family: var(--font); text-decoration: none;
+}
+.anchor-inner a:hover { color: var(--ink); background: var(--chip-bg); }
+
+/* ============================================================
+   SECTIONS (single continuous document — no JS tab switching)
+   ============================================================ */
+main.wrap { padding: 26px 0 90px; }
+
+section.block {
+  position: relative;
+  background: var(--card);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid var(--hair);
+  border-radius: var(--radius);
+  padding: clamp(20px, 4vw, 34px);
+  margin: 26px 0;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  scroll-margin-top: 190px;
+}
+section.block::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+  background: var(--accent, var(--g-blue));
+}
+.block.acc-blue { --accent: var(--g-blue); }
+.block.acc-red { --accent: var(--g-red); }
+.block.acc-yellow { --accent: var(--g-yellow); }
+.block.acc-green { --accent: var(--g-green); }
+.block.acc-multi::before { background: linear-gradient(var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green)); }
+
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent, var(--g-blue)); margin: 0 0 8px; }
+.eyebrow .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--accent, var(--g-blue)); box-shadow: 0 0 12px var(--accent, var(--g-blue)); }
+h1,h2,h3,h4 { letter-spacing: -0.025em; line-height: 1.15; margin: 0 0 12px; text-wrap: balance; }
+h2 { font-size: clamp(1.5rem, 4.5vw, 2.1rem); margin-bottom: 14px; }
+h3 { font-size: clamp(1.15rem, 3vw, 1.4rem); margin-top: 6px; }
+h4 { font-size: 1.02rem; }
+p { color: var(--ink-soft); margin: 0 0 14px; }
+a { color: var(--g-blue); text-decoration: none; border-bottom: 1px solid oklch(0.62 0.19 262 / 0.4); }
+a:hover { border-color: var(--g-blue); }
+.lead { font-size: clamp(1rem, 2.6vw, 1.12rem); color: var(--ink-soft); line-height: 1.65; max-width: 62ch; }
+strong { color: var(--ink); font-weight: 650; }
+code.inline { font-family: var(--mono); font-size: 0.86em; background: var(--chip-bg); padding: 2px 6px; border-radius: 6px; border: 1px solid var(--hair); }
+
+/* ---- Hero ---- */
+.hero {
+  position: relative; text-align: left; padding: clamp(30px, 7vw, 64px) clamp(22px, 5vw, 44px);
+  border-radius: 28px; overflow: hidden; margin: 22px 0;
+  background: var(--card);
+  backdrop-filter: blur(12px) saturate(1.3); -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid var(--hair);
+  box-shadow: var(--shadow);
+}
+.hero::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: conic-gradient(from var(--grad-angle),
+    oklch(0.62 0.19 262 / 0.16), oklch(0.63 0.23 27 / 0.16),
+    oklch(0.84 0.16 90 / 0.16), oklch(0.66 0.16 150 / 0.16), oklch(0.62 0.19 262 / 0.16));
+  animation: spin-grad 22s linear infinite;
+  mask: radial-gradient(120% 120% at 15% 0%, #000, transparent 72%);
+}
+.hero > * { position: relative; z-index: 1; }
+@keyframes spin-grad { to { --grad-angle: 360deg; } }
+
+.h-title { font-size: clamp(2.1rem, 8vw, 3.6rem); font-weight: 800; line-height: 1.02; margin: 8px 0 14px; letter-spacing: -0.04em; }
+.grad-text {
+  background: linear-gradient(100deg, var(--g-blue), var(--g-green) 40%, var(--g-yellow) 62%, var(--g-red));
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: shimmer 9s ease-in-out infinite;
+}
+@keyframes shimmer { 0%,100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; }
+.badge { font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--chip-bg); border: 1px solid var(--hair-strong); color: var(--ink-soft); display: inline-flex; align-items: center; gap: 6px; }
+.badge .d { width: 7px; height: 7px; border-radius: 50%; }
+
+.glow { position: relative; }
+.glow::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from var(--grad-angle), var(--g-blue), var(--g-red), var(--g-yellow), var(--g-green), var(--g-blue));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: spin-grad 7s linear infinite;
+  opacity: 0.9;
+}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.table-scroll { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--hair); -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 520px; }
+thead th {
+  text-align: left; padding: 12px 14px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-faint); background: var(--chip-bg); position: sticky; top: 0; font-weight: 700; white-space: nowrap;
+}
+tbody td { padding: 12px 14px; border-top: 1px solid var(--hair); vertical-align: top; color: var(--ink-soft); }
+tbody tr:hover { background: var(--chip-bg); }
+tbody td:first-child { color: var(--ink); font-weight: 600; }
+.pill { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; letter-spacing: 0.02em; }
+.pill.add { background: oklch(0.66 0.16 150 / 0.18); color: oklch(0.72 0.16 150); border: 1px solid oklch(0.66 0.16 150 / 0.4); }
+.pill.skip { background: oklch(0.63 0.23 27 / 0.16); color: oklch(0.72 0.2 27); border: 1px solid oklch(0.63 0.23 27 / 0.38); }
+.pill.cond { background: oklch(0.84 0.16 90 / 0.16); color: oklch(0.72 0.14 85); border: 1px solid oklch(0.84 0.16 90 / 0.42); }
+.pill.rec { background: oklch(0.62 0.19 262 / 0.16); color: oklch(0.7 0.17 262); border: 1px solid oklch(0.62 0.19 262 / 0.42); }
+
+/* ============================================================
+   CALLOUT
+   ============================================================ */
+.callout {
+  position: relative; border-radius: var(--radius-sm); padding: 18px 20px 18px 22px; margin: 18px 0;
+  background: var(--chip-bg); border: 1px solid var(--hair);
+}
+.callout::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 4px; border-radius: 4px; background: var(--accent, var(--g-yellow)); }
+.callout h4 { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+.callout.warn { --accent: var(--g-red); }
+.callout.info { --accent: var(--g-blue); }
+.callout.tip { --accent: var(--g-green); }
+.callout ul { margin: 6px 0 0; padding-left: 20px; }
+.callout li { color: var(--ink-soft); margin: 5px 0; }
+
+/* ---- Two-column pros / limitations ---- */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.pcard { border-radius: var(--radius-sm); padding: 18px 20px; border: 1px solid var(--hair); background: var(--chip-bg); }
+.pcard h4 { display: flex; align-items: center; gap: 8px; }
+.pcard ul { margin: 8px 0 0; padding-left: 4px; list-style: none; }
+.pcard li { position: relative; padding-left: 24px; margin: 9px 0; color: var(--ink-soft); font-size: 0.92rem; }
+.pcard.pro li::before { content: "✓"; position: absolute; left: 0; top: 0; color: oklch(0.7 0.16 150); font-weight: 800; }
+.pcard.con li::before { content: "!"; position: absolute; left: 3px; top: 0; color: oklch(0.72 0.2 27); font-weight: 800; }
+
+/* ---- Feature cards grid ---- */
+.grid { display: grid; gap: 14px; }
+.grid.g2 { grid-template-columns: repeat(2, 1fr); }
+.grid.g3 { grid-template-columns: repeat(3, 1fr); }
+.mini {
+  border-radius: var(--radius-sm); padding: 16px 18px; border: 1px solid var(--hair); background: var(--chip-bg);
+}
+.mini h4 { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+.mini .ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-size: 0.95rem; flex: none; color: #fff; }
+.mini p { font-size: 0.89rem; line-height: 1.55; margin: 0; }
+
+/* ============================================================
+   TASK CARDS — native <details> replaces the JS config picker
+   + expandable config table (tap to open, no script needed)
+   ============================================================ */
+.task-card { border: 1px solid var(--hair); border-radius: var(--radius-sm); overflow: hidden; margin-top: 10px; background: var(--card-solid); }
+.task-card summary {
+  list-style: none; cursor: pointer; padding: 15px 18px; font-weight: 700; color: var(--ink);
+  display: flex; align-items: center; gap: 12px; background: var(--chip-bg); user-select: none;
+}
+.task-card summary::-webkit-details-marker { display: none; }
+.task-card summary .tag { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+.task-card summary .sub { font-weight: 500; color: var(--ink-faint); font-size: 0.82rem; margin-left: 2px; }
+.task-card summary .plus { margin-left: auto; transition: transform .25s; color: var(--ink-faint); font-size: 1.2rem; }
+.task-card[open] summary .plus { transform: rotate(45deg); }
+.task-card .body { padding: 16px 18px 20px; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 4px 0 16px; }
+.stat { border-radius: 12px; padding: 12px 14px; background: var(--chip-bg); border: 1px solid var(--hair); }
+.stat .k { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); font-weight: 700; }
+.stat .v { font-size: 1.3rem; font-weight: 750; margin-top: 3px; letter-spacing: -0.02em; }
+.stat.hl .v { color: var(--accent-live, var(--g-blue)); }
+.rationale { font-size: 0.9rem; color: var(--ink-soft); border-top: 1px dashed var(--hair-strong); padding-top: 14px; margin-top: 2px; }
+.rationale b { color: var(--ink); }
+.prompt-ref { font-size: 0.85rem; color: var(--ink-faint); margin-top: 10px; }
+.prompt-ref b { color: var(--ink-soft); }
+
+/* ============================================================
+   GLOSSARY / GENERIC ACCORDION
+   ============================================================ */
+.acc { border: 1px solid var(--hair); border-radius: var(--radius-sm); overflow: hidden; margin-top: 4px; }
+.acc + .acc { margin-top: 10px; }
+.acc summary {
+  list-style: none; cursor: pointer; padding: 15px 18px; font-weight: 650; color: var(--ink);
+  display: flex; align-items: center; gap: 12px; background: var(--chip-bg); user-select: none;
+}
+.acc summary::-webkit-details-marker { display: none; }
+.acc summary .plus { margin-left: auto; transition: transform .25s; color: var(--ink-faint); font-size: 1.2rem; }
+.acc[open] summary .plus { transform: rotate(45deg); }
+.acc summary .tag { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.acc .body { padding: 4px 18px 18px; color: var(--ink-soft); font-size: 0.92rem; }
+
+/* ============================================================
+   CODE / SYSTEM PROMPT BLOCKS (tap-and-hold to copy — no button)
+   ============================================================ */
+.prompt-card { margin: 16px 0; border-radius: var(--radius-sm); border: 1px solid var(--hair); overflow: hidden; background: var(--card-solid); }
+.prompt-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--hair); background: var(--chip-bg); }
+.prompt-head .tag { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.prompt-head h4 { margin: 0; font-size: 0.95rem; flex: 1; min-width: 0; }
+pre { margin: 0; padding: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; -webkit-user-select: text; user-select: text; }
+pre code { font-family: var(--mono); font-size: 0.83rem; line-height: 1.6; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+
+/* ---- Setup steps ---- */
+.steps { counter-reset: s; list-style: none; padding: 0; margin: 6px 0 0; }
+.steps li { position: relative; padding: 4px 0 16px 46px; color: var(--ink-soft); }
+.steps li::before {
+  counter-increment: s; content: counter(s); position: absolute; left: 0; top: 0;
+  width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-weight: 800; font-size: 0.85rem; color: #fff;
+  background: linear-gradient(135deg, var(--g-blue), var(--g-green));
+}
+.steps li strong { display: block; color: var(--ink); }
+
+footer { text-align: center; padding: 30px 20px 60px; color: var(--ink-faint); font-size: 0.82rem; }
+footer .dots { margin: 0 auto 12px; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 720px) {
+  .two-col, .grid.g2, .grid.g3 { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .blob, .curtain, .beam, .stars i, .dots, .hero::after, .glow::before, .grad-text { animation: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Moving background layers (pure CSS — animates with zero JavaScript) ===== -->
+<div class="aurora" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="curtain c1"></div>
+  <div class="curtain c2"></div>
+  <div class="curtain c3"></div>
+  <div class="curtain c4"></div>
+  <div class="beam"></div>
+  <div class="stars" aria-hidden="true">
+  <i class="s1" style="left:32.4%;top:15.1%;width:2.0px;height:2.0px;--tw:2.8s;--td:2.7s"></i>
+  <i class="s2" style="left:36.6%;top:5.8%;width:1.8px;height:1.8px;--tw:2.6s;--td:2.2s"></i>
+  <i class="s3" style="left:7.0%;top:9.1%;width:1.7px;height:1.7px;--tw:5.8s;--td:0.6s"></i>
+  <i class="s4" style="left:22.3%;top:62.7%;width:2.5px;height:2.5px;--tw:4.8s;--td:2.0s"></i>
+  <i class="s1" style="left:97.6%;top:4.7%;width:2.4px;height:2.4px;--tw:3.7s;--td:0.7s"></i>
+  <i class="s2" style="left:11.8%;top:30.8%;width:2.3px;height:2.3px;--tw:3.2s;--td:2.9s"></i>
+  <i class="s3" style="left:63.9%;top:37.2%;width:1.9px;height:1.9px;--tw:2.8s;--td:0.3s"></i>
+  <i class="s4" style="left:20.6%;top:68.0%;width:1.7px;height:1.7px;--tw:3.8s;--td:2.9s"></i>
+  <i class="s1" style="left:45.3%;top:30.0%;width:2.3px;height:2.3px;--tw:5.3s;--td:1.2s"></i>
+  <i class="s2" style="left:57.4%;top:52.5%;width:2.4px;height:2.4px;--tw:5.4s;--td:1.4s"></i>
+  <i class="s3" style="left:98.0%;top:11.8%;width:1.7px;height:1.7px;--tw:5.5s;--td:0.8s"></i>
+  <i class="s4" style="left:48.9%;top:3.9%;width:2.1px;height:2.1px;--tw:5.6s;--td:2.9s"></i>
+  <i class="s1" style="left:87.5%;top:31.4%;width:2.1px;height:2.1px;--tw:4.9s;--td:2.9s"></i>
+  <i class="s2" style="left:45.6%;top:84.0%;width:2.5px;height:2.5px;--tw:4.4s;--td:3.3s"></i>
+  <i class="s3" style="left:6.1%;top:70.1%;width:2.0px;height:2.0px;--tw:6.5s;--td:4.1s"></i>
+  <i class="s4" style="left:28.5%;top:38.6%;width:2.1px;height:2.1px;--tw:2.6s;--td:2.3s"></i>
+  <i class="s1" style="left:16.8%;top:11.7%;width:1.1px;height:1.1px;--tw:5.6s;--td:0.6s"></i>
+  <i class="s2" style="left:24.8%;top:39.1%;width:2.4px;height:2.4px;--tw:2.8s;--td:2.2s"></i>
+  <i class="s3" style="left:54.9%;top:88.3%;width:2.3px;height:2.3px;--tw:6.0s;--td:1.4s"></i>
+  <i class="s4" style="left:41.5%;top:35.9%;width:2.4px;height:2.4px;--tw:6.3s;--td:0.8s"></i>
+  <i class="s1" style="left:17.6%;top:23.2%;width:1.4px;height:1.4px;--tw:4.4s;--td:2.9s"></i>
+  <i class="s2" style="left:26.3%;top:0.4%;width:1.7px;height:1.7px;--tw:4.0s;--td:2.8s"></i>
+  </div>
+</div>
+<svg class="grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <filter id="grainFilter"><feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="2" stitchTiles="stitch"/></filter>
+  <rect filter="url(#grainFilter)"></rect>
+</svg>
+
+<!-- ===== Header + anchor nav share one sticky wrapper (see .stickytop) ===== -->
+<div class="stickytop">
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div>Gemma 4 Field Guide<small>Google AI Edge Gallery · offline reference</small></div>
+      </div>
+      <div class="offline-badge">No JS · Quick Look ready</div>
+    </div>
+  </header>
+
+  <nav class="anchor-nav" aria-label="Sections">
+    <div class="anchor-inner">
+      <a href="#overview">Overview</a>
+      <a href="#features">Features</a>
+      <a href="#mobile-actions">Mobile</a>
+      <a href="#setup">Setup</a>
+      <a href="#compare">Compare</a>
+      <a href="#models">Models</a>
+      <a href="#configure">Configure</a>
+      <a href="#benchmark">Benchmark</a>
+      <a href="#glossary">Glossary</a>
+      <a href="#prompts">Prompts</a>
+      <a href="#skills">Skills</a>
+    </div>
+  </nav>
+</div>
+
+<main class="wrap">
+
+  <div class="hero glow" id="overview">
+    <span class="eyebrow"><span class="pip"></span> On-device · Offline · Private</span>
+    <div class="h-title">Google <span class="grad-text">AI Edge Gallery</span><br/>+ Gemma 4</div>
+    <p class="lead">A pocket lab for running open on-device models straight on your iPhone — no wifi, no accounts, nothing leaves the phone. This guide is my cheat-sheet for actually configuring it well: which models to keep, the per-task settings that matter, and the system prompts to paste in.</p>
+    <div class="badges">
+      <span class="badge"><span class="d" style="background:var(--g-blue)"></span> iOS · App Store</span>
+      <span class="badge"><span class="d" style="background:var(--g-green)"></span> Android · Play Store</span>
+      <span class="badge"><span class="d" style="background:var(--g-yellow)"></span> LiteRT runtime → also laptop/desktop</span>
+      <span class="badge"><span class="d" style="background:var(--g-red)"></span> Open-source</span>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <h4>📄 About this offline twin</h4>
+    <p style="margin:0">This is the <strong>zero-JavaScript</strong> version of the full interactive guide, built to open cleanly in <strong>iOS Quick Look</strong> (tap the file in Files) or any offline viewer — those never run <code class="inline">&lt;script&gt;</code>. Same content, three intentional differences: <strong>(1)</strong> theme follows your iOS system Appearance automatically — no in-page toggle; <strong>(2)</strong> the live config picker and search box are replaced by tap-to-expand task cards below; <strong>(3)</strong> to copy a prompt, tap and hold inside the code block → Select All → Copy (clipboard buttons need JavaScript).</p>
+  </div>
+
+  <section class="block acc-blue">
+    <span class="eyebrow"><span class="pip"></span> What it is</span>
+    <h2>One-device AI, zero cloud</h2>
+    <p><strong>Google AI Edge Gallery</strong> is Google's open-source showcase app for running generative models <strong>entirely on-device</strong> through the LiteRT / MediaPipe runtime. Every inference — text, image, audio — happens on your own silicon. Nothing is uploaded, so it keeps working in airplane mode and your prompts stay yours.</p>
+    <p><em>What it's for:</em> a private, offline sandbox to chat, read images, transcribe audio, run agentic skills, and benchmark open models — and to import your own from Hugging Face when the defaults aren't enough.</p>
+    <div class="callout info">
+      <h4>📌 Source of truth</h4>
+      <p style="margin:0">Everything here is tuned for daily reference on an <strong>iPhone 17</strong>. Feature set and repo details from <a href="https://github.com/google-ai-edge/gallery">github.com/google-ai-edge/gallery</a> and its wiki. Config numbers below are sensible starting points — nudge them to taste.</p>
+    </div>
+  </section>
+
+  <section class="block acc-green" id="features">
+    <span class="eyebrow"><span class="pip"></span> Feature reference</span>
+    <h2>What each tile does</h2>
+    <p>The home grid is a set of task tiles. Here's the quick map of function → when to reach for it.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Feature</th><th>Function</th><th>Best use case</th></tr></thead>
+        <tbody>
+          <tr><td>AI Chat</td><td>Multi-turn conversation; optional <em>Thinking Mode</em> shows the model's reasoning (Gemma 4 family first).</td><td>Everyday Q&amp;A, brainstorming, working through a problem step by step.</td></tr>
+          <tr><td>Ask Image</td><td>Multimodal vision — point the camera or pick a photo, ask about it.</td><td>Identify objects/gear, read a diagram, describe a scene, solve a visual puzzle.</td></tr>
+          <tr><td>Prompt Lab</td><td>Single-turn workspace with granular control over temperature, top-k, etc.</td><td>Code generation, rewriting, one-shot templates where you tune parameters.</td></tr>
+          <tr><td>Audio Scribe</td><td>Real-time on-device transcription &amp; translation of voice.</td><td>Lecture capture, voice memos, translating a spoken phrase offline.</td></tr>
+          <tr><td>Agent Skills</td><td>Let Gemma 4 complete agentic tasks, optionally calling loaded MCP tools/skills.</td><td>Multi-step jobs, tool use, studying how agent loops behave locally.</td></tr>
+          <tr><td>Mobile Actions</td><td>Natural language → structured function call → a real OS action (via FunctionGemma 270M).</td><td>"Turn on the flashlight", "make a 2:30 event", hands-free device control.</td></tr>
+          <tr><td>Tiny Garden</td><td>Playground built on the tiny 270M model — fast, low-power generative demos.</td><td>Instant, lightweight outputs where speed &gt; depth; testing the small model.</td></tr>
+          <tr><td>Performance Metrics</td><td>In-app benchmark — tokens/sec, time-to-first-token, memory for a model on your device.</td><td>Deciding GPU vs CPU and which model actually runs well on your iPhone.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block acc-red" id="mobile-actions">
+    <span class="eyebrow"><span class="pip"></span> iPhone specifics</span>
+    <h2>Mobile Actions on iOS</h2>
+    <p>This one deserves its own box because iOS behaves differently from Android.</p>
+    <div class="grid g2">
+      <div class="mini glow">
+        <h4><span class="ico" style="background:var(--g-red)">⚡</span> How it works</h4>
+        <p>Powered by <strong>FunctionGemma 270M</strong>: it translates a plain-English request into a <strong>structured function call</strong>, then fires a real OS action. Example commands:</p>
+        <p style="margin-top:8px">• <code class="inline">"Show me the San Francisco airport on map"</code><br/>• <code class="inline">"Create a calendar event for 2:30 PM tomorrow"</code><br/>• <code class="inline">"Turn on the flashlight"</code></p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-blue)">🔒</span> The iOS sandbox</h4>
+        <p>iOS is sandboxed tighter than Android, so Mobile Actions is limited to <strong>public Apple APIs</strong>: EventKit (calendar), MapKit (maps), and the flashlight toggle — not general device control. Calendar &amp; notification actions exist but are <strong>more limited than on Android</strong>.</p>
+      </div>
+    </div>
+    <div class="callout warn">
+      <h4>⚠️ Permissions &amp; benchmarking</h4>
+      <ul>
+        <li><strong>MCP tool calls ask first.</strong> The model requests permission before executing an action, with an <em>"Always allow"</em> option — expect a prompt the first time.</li>
+        <li><strong>Get numbers for YOUR phone.</strong> Run the in-app benchmark (<code class="inline">Models Management → top-left menu</code>) to see real performance specific to your iPhone 17 before trusting any config.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block acc-yellow" id="setup">
+    <span class="eyebrow"><span class="pip"></span> Quick setup</span>
+    <h2>Get running in 4 steps</h2>
+    <ol class="steps">
+      <li><strong>Install from the App Store</strong> — search "Google AI Edge Gallery" (iOS) or grab it on the Play Store for Android.</li>
+      <li><strong>Download a default model</strong> — start with Gemma 4 E2B or E4B from the in-app model list.</li>
+      <li><strong>Import extras from Hugging Face</strong> — search &amp; import add-on models directly inside the app. No manual sideloading needed anymore.</li>
+      <li><strong>Benchmark, then tune</strong> — run Performance Metrics, pick GPU or CPU, then set per-task configs (see Configure below).</li>
+    </ol>
+  </section>
+
+  <section class="block acc-blue" id="compare">
+    <span class="eyebrow"><span class="pip"></span> Where it fits</span>
+    <h2>How it differs — vs Google's own services</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Service</th><th>Key difference</th><th>Edge Gallery wins / loses</th></tr></thead>
+        <tbody>
+          <tr><td>Gemini (app / cloud)</td><td>Gemini runs huge models in the cloud; Edge Gallery runs small models locally.</td><td><strong>Wins</strong> on privacy &amp; offline; <strong>loses</strong> on raw capability &amp; knowledge freshness.</td></tr>
+          <tr><td>Google Photos AI</td><td>Photos does cloud-scale search/editing on your library.</td><td><strong>Wins</strong> on "nothing uploaded" image Q&amp;A; <strong>loses</strong> on library-wide indexing &amp; polish.</td></tr>
+          <tr><td>Android System AI</td><td>Baked into the OS with deep system hooks.</td><td><strong>Wins</strong> as an open, model-swappable sandbox; <strong>loses</strong> on seamless OS integration (esp. on iOS).</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block acc-red">
+    <span class="eyebrow"><span class="pip"></span> Where it fits</span>
+    <h2>…and vs other brands</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Alternative</th><th>Key difference</th><th>Edge Gallery wins / loses</th></tr></thead>
+        <tbody>
+          <tr><td>ChatGPT / Claude / Perplexity</td><td>Cloud assistants with frontier models &amp; live web.</td><td><strong>Wins</strong> on offline, private, free, no rate limits; <strong>loses</strong> on depth, context length, tooling.</td></tr>
+          <tr><td>LM Studio / Ollama</td><td>Desktop-class local model runners.</td><td><strong>Wins</strong> as a polished phone-native app with agentic tiles; <strong>loses</strong> on model size &amp; power vs a laptop.</td></tr>
+          <tr><td>Photo-gallery AI apps</td><td>Single-purpose vision/edit apps.</td><td><strong>Wins</strong> on being general-purpose + private; <strong>loses</strong> on task-specific features &amp; UI niceties.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block acc-green">
+    <span class="eyebrow"><span class="pip"></span> Honest take</span>
+    <h2>Pros &amp; limitations</h2>
+    <div class="two-col">
+      <div class="pcard pro">
+        <h4>👍 Pros</h4>
+        <ul>
+          <li>Fully offline — works with no wifi/signal, in airplane mode.</li>
+          <li>Private by design — prompts, images, audio never leave the device.</li>
+          <li>Free, no accounts, no rate limits, no token metering.</li>
+          <li>Model-swappable sandbox — import anything from Hugging Face.</li>
+          <li>Real agentic tiles (Agent Skills, Mobile Actions) to study tool use.</li>
+          <li>On-device benchmarking to right-size models per phone.</li>
+        </ul>
+      </div>
+      <div class="pcard con">
+        <h4>👎 Limitations</h4>
+        <ul>
+          <li>Small models — weaker reasoning &amp; shorter memory than cloud AI.</li>
+          <li>Knowledge is frozen at training time; no live web.</li>
+          <li>Heavy use drains battery &amp; warms the phone.</li>
+          <li>iOS sandbox limits Mobile Actions to a few public APIs.</li>
+          <li>Setup/tuning has a learning curve (that's what this guide is for).</li>
+          <li>Big models may not fit in memory on-device.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block acc-multi" id="usecases">
+    <span class="eyebrow"><span class="pip"></span> When it beats the cloud</span>
+    <h2>Offline use-case comparison</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Scenario</th><th>Cloud AI</th><th>Edge Gallery</th></tr></thead>
+        <tbody>
+          <tr><td>No wifi / no signal</td><td>❌ Dead without a connection</td><td>✅ Runs fully offline</td></tr>
+          <tr><td>Sensitive data</td><td>⚠️ Sent to a server</td><td>✅ Never leaves the phone</td></tr>
+          <tr><td>Rate limits / quotas</td><td>⚠️ Throttled / paywalled</td><td>✅ Unlimited local runs</td></tr>
+          <tr><td>Custom tool extensions</td><td>⚠️ Locked to their tools</td><td>✅ Load your own MCP skills</td></tr>
+          <tr><td>Studying agent design</td><td>⚠️ Black box</td><td>✅ Watch the loop locally</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout tip">
+      <h4>🎯 My actual scenarios</h4>
+      <ul>
+        <li><strong>Climbing gear ID</strong> — Ask Image to name a cam/carabiner or read a spec at the crag with no signal.</li>
+        <li><strong>Lecture transcription</strong> — Audio Scribe captures a class offline, no recording uploaded anywhere.</li>
+        <li><strong>Private financial drafting</strong> — draft sensitive notes in Prompt Lab without a server ever seeing them.</li>
+        <li><strong>HKU translation</strong> — quick multilingual help while traveling with spotty data.</li>
+        <li><strong>Offline device control</strong> — Mobile Actions for flashlight / calendar / maps hands-free.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block acc-blue" id="models">
+    <span class="eyebrow"><span class="pip"></span> Model selection</span>
+    <h2>Default models — what to keep on the iPhone 17</h2>
+    <p>These ship in the in-app list. Keep the two Gemma 4 builds as daily drivers; the rest are situational.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Model</th><th>Params</th><th>Best for</th><th>Recommendation</th></tr></thead>
+        <tbody>
+          <tr><td>Gemma 4 E2B</td><td>~2B eff.</td><td>Fast everyday chat, quick tasks, tight on memory.</td><td><span class="pill rec">Daily driver</span> Snappy default.</td></tr>
+          <tr><td>Gemma 4 E4B</td><td>~4B eff.</td><td>Harder reasoning, code, longer answers, Thinking Mode.</td><td><span class="pill add">Keep</span> When you want quality over speed.</td></tr>
+          <tr><td>Gemma 3n E2B</td><td>~2B eff.</td><td>Prior-gen multimodal; good vision/audio fallback.</td><td><span class="pill cond">Optional</span> Keep if Gemma 4 vision misbehaves.</td></tr>
+          <tr><td>Gemma 3n E4B</td><td>~4B eff.</td><td>Prior-gen, stronger multimodal.</td><td><span class="pill cond">Optional</span> Backup for Ask Image / Audio.</td></tr>
+          <tr><td>Gemma 3 1B</td><td>~1B</td><td>Ultra-light text, lowest battery draw.</td><td><span class="pill cond">Situational</span> Speed &amp; battery over depth.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block acc-green">
+    <span class="eyebrow"><span class="pip"></span> Model selection</span>
+    <h2>Add-on models to import</h2>
+    <p>All officially supported now — import directly from Hugging Face <em>inside the app</em>, no manual sideloading.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Model</th><th>Verdict</th><th>Reason</th></tr></thead>
+        <tbody>
+          <tr><td>Phi-4-mini-instruct</td><td><span class="pill add">Add</span></td><td>Strong small-model reasoning &amp; instruction-following — great second brain alongside Gemma 4.</td></tr>
+          <tr><td>DeepSeek-R1-Distill-Qwen-1.5B</td><td><span class="pill add">Add</span></td><td>Tiny reasoning model — visible chain-of-thought for math/logic at very low cost.</td></tr>
+          <tr><td>Parakeet-tdt-0.6b</td><td><span class="pill add">Add</span></td><td>Dedicated speech-to-text — sharpens Audio Scribe accuracy for lectures.</td></tr>
+          <tr><td>Qwen2.5-1.5B-Instruct</td><td><span class="pill cond">Conditional</span></td><td>Best multilingual coverage — add for HKU travel / translation; skip if you don't need it.</td></tr>
+          <tr><td>7B+ general models</td><td><span class="pill skip">Skip</span></td><td>Usually won't fit / run smoothly in phone memory — leave these for a laptop.</td></tr>
+          <tr><td>Redundant 1–2B chat clones</td><td><span class="pill skip">Skip</span></td><td>Gemma 4 already covers general chat; extra near-duplicates just eat storage.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info">
+      <h4>💡 Rule of thumb</h4>
+      <p style="margin:0">Keep <strong>one strong generalist</strong> (Gemma 4 E4B), <strong>one speed model</strong> (E2B / Gemma 3 1B), and <strong>one specialist per job</strong> you actually do (Parakeet for audio, Qwen for languages). Everything else is storage you'll regret.</p>
+    </div>
+  </section>
+
+  <section class="block acc-multi glow" id="configure">
+    <span class="eyebrow"><span class="pip"></span> Tap a task to expand</span>
+    <h2>Task configuration cards</h2>
+    <p>The live picker needed JavaScript to auto-combine prompts; here each task is a self-contained card — tap to expand the settings, the rationale, and which prompt to pair it with (see Prompts below).</p>
+
+    <details class="task-card">
+      <summary><span class="tag" style="background:var(--g-blue)"></span>AI Chat — Factual<span class="sub">Temp 0.2 · GPU · Thinking On</span><span class="plus">+</span></summary>
+      <div class="body">
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Max Tokens</div><div class="v">2048</div></div>
+          <div class="stat"><div class="k">Top-K</div><div class="v">20</div></div>
+          <div class="stat"><div class="k">Top-P</div><div class="v">0.9</div></div>
+          <div class="stat hl"><div class="k">Temp</div><div class="v" style="color:var(--g-blue)">0.2</div></div>
+          <div class="stat"><div class="k">Accel</div><div class="v">GPU</div></div>
+          <div class="stat"><div class="k">Thinking</div><div class="v">On</div></div>
+          <div class="stat"><div class="k">Spec Decode</div><div class="v">On</div></div>
+        </div>
+        <div class="rationale"><b>Why:</b> Low temperature keeps answers accurate and grounded; Thinking Mode helps it reason through the question. GPU for a smooth long answer.</div>
+        <div class="prompt-ref"><b>Prompt:</b> Core template (no append needed) — see Prompts below.</div>
+      </div>
+    </details>
+
+    <details class="task-card">
+      <summary><span class="tag" style="background:var(--g-blue)"></span>AI Chat — Casual<span class="sub">Temp 0.8 · GPU · Thinking Off</span><span class="plus">+</span></summary>
+      <div class="body">
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Max Tokens</div><div class="v">1536</div></div>
+          <div class="stat"><div class="k">Top-K</div><div class="v">40</div></div>
+          <div class="stat"><div class="k">Top-P</div><div class="v">0.95</div></div>
+          <div class="stat hl"><div class="k">Temp</div><div class="v" style="color:var(--g-blue)">0.8</div></div>
+          <div class="stat"><div class="k">Accel</div><div class="v">GPU</div></div>
+          <div class="stat"><div class="k">Thinking</div><div class="v">Off</div></div>
+          <div class="stat"><div class="k">Spec Decode</div><div class="v">On</div></div>
+        </div>
+        <div class="rationale"><b>Why:</b> Higher temperature + wider sampling makes replies feel natural and varied. Thinking off keeps banter fast and unfussy.</div>
+        <div class="prompt-ref"><b>Prompt:</b> Core template (no append needed) — see Prompts below.</div>
+      </div>
+    </details>
+
+    <details class="task-card">
+      <summary><span class="tag" style="background:var(--g-yellow)"></span>Prompt Lab — Code<span class="sub">Temp 0.1 · GPU · Thinking On</span><span class="plus">+</span></summary>
+      <div class="body">
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Max Tokens</div><div class="v">4096</div></div>
+          <div class="stat"><div class="k">Top-K</div><div class="v">20</div></div>
+          <div class="stat"><div class="k">Top-P</div><div class="v">0.9</div></div>
+          <div class="stat hl"><div class="k">Temp</div><div class="v" style="color:var(--g-yellow)">0.1</div></div>
+          <div class="stat"><div class="k">Accel</div><div class="v">GPU</div></div>
+          <div class="stat"><div class="k">Thinking</div><div class="v">On</div></div>
+          <div class="stat"><div class="k">Spec Decode</div><div class="v">On</div></div>
+        </div>
+        <div class="rationale"><b>Why:</b> Near-deterministic for correct, consistent code. Big token ceiling for whole functions/files; Thinking on for trickier logic.</div>
+        <div class="prompt-ref"><b>Prompt:</b> Core template + "Prompt Lab — code" append — see Prompts below.</div>
+      </div>
+    </details>
+
+    <details class="task-card">
+      <summary><span class="tag" style="background:var(--g-yellow)"></span>Prompt Lab — Creative<span class="sub">Temp 1.1 · GPU · Thinking Off</span><span class="plus">+</span></summary>
+      <div class="body">
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Max Tokens</div><div class="v">3072</div></div>
+          <div class="stat"><div class="k">Top-K</div><div class="v">64</div></div>
+          <div class="stat"><div class="k">Top-P</div><div class="v">0.98</div></div>
+          <div class="stat hl"><div class="k">Temp</div><div class="v" style="color:var(--g-yellow)">1.1</div></div>
+          <div class="stat"><div class="k">Accel</div><div class="v">GPU</div></div>
+          <div class="stat"><div class="k">Thinking</div><div class="v">Off</div></div>
+          <div class="stat"><div class="k">Spec Decode</div><div class="v">On</div></div>
+        </div>
+        <div class="rationale"><b>Why:</b> High temperature and wide Top-K/Top-P open the floodgates for surprising, original writing — but small on-device models start to unravel past ~1.1, so this sits at the ceiling rather than beyond it. Thinking off so it stays loose.</div>
+        <div class="prompt-ref"><b>Prompt:</b> Core template + "Prompt Lab — creative" append — see Prompts below.</div>
+      </div>
+    </details>
+
+    <details class="task-card">
+      <summary><span class="tag" style="background:var(--g-red)"></span>Ask Image<span class="sub">Temp 0.4 · GPU · Spec Off</span><span class="plus">+</span></summary>
+      <div class="body">
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Max Tokens</div><div class="v">1024</div></div>
+          <div class="stat"><div class="k">Top-K</div><div class="v">40</div></div>
+          <div class="stat"><div class="k">Top-P</div><div class="v">0.9</div></div>
+          <div class="stat hl"><div class="k">Temp</div><div class="v" style="color:var(--g-red)">0.4</div></div>
+          <div class="stat"><div class="k">Accel</div><div class="v">GPU</div></div>
+          <div class="stat"><div class="k">Thinking</div><div class="v">Off</div></div>
+          <div class="stat"><div class="k">Spec Decode</div><div class="v">Off</div></div>
+        </div>
+        <div class="rationale"><b>Why:</b> Moderate temperature for grounded description without dryness. Speculative decoding off — it targets text generation, not vision. GPU for throughput.</div>
+        <div class="prompt-ref"><b>Prompt:</b> Core template + "Ask Image" append — see Prompts below.</div>
+      </div>
+    </details>
+
+    <details class="task-card">
+      <summary><span class="tag" style="background:var(--g-red)"></span>Audio Scribe<span class="sub">Temp 0.0 · GPU · Greedy</span><span class="plus">+</span></summary>
+      <div class="body">
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Max Tokens</div><div class="v">4096</div></div>
+          <div class="stat"><div class="k">Top-K</div><div class="v">1</div></div>
+          <div class="stat"><div class="k">Top-P</div><div class="v">1.0</div></div>
+          <div class="stat hl"><div class="k">Temp</div><div class="v" style="color:var(--g-red)">0.0</div></div>
+          <div class="stat"><div class="k">Accel</div><div class="v">GPU</div></div>
+          <div class="stat"><div class="k">Thinking</div><div class="v">Off</div></div>
+          <div class="stat"><div class="k">Spec Decode</div><div class="v">Off</div></div>
+        </div>
+        <div class="rationale"><b>Why:</b> Transcription must be faithful — greedy decoding (Top-K 1, temp 0) prevents the model from "improving" your words. 4096 tokens leaves room for a full lecture block; drop it for short memos if output feels slow.</div>
+        <div class="prompt-ref"><b>Prompt:</b> Core template + "Audio Scribe" append — see Prompts below.</div>
+      </div>
+    </details>
+
+    <details class="task-card">
+      <summary><span class="tag" style="background:var(--g-green)"></span>Agent Skills<span class="sub">Temp 0.3 · GPU · Thinking On</span><span class="plus">+</span></summary>
+      <div class="body">
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Max Tokens</div><div class="v">2048</div></div>
+          <div class="stat"><div class="k">Top-K</div><div class="v">20</div></div>
+          <div class="stat"><div class="k">Top-P</div><div class="v">0.9</div></div>
+          <div class="stat hl"><div class="k">Temp</div><div class="v" style="color:var(--g-green)">0.3</div></div>
+          <div class="stat"><div class="k">Accel</div><div class="v">GPU</div></div>
+          <div class="stat"><div class="k">Thinking</div><div class="v">On</div></div>
+          <div class="stat"><div class="k">Spec Decode</div><div class="v">On</div></div>
+        </div>
+        <div class="rationale"><b>Why:</b> Reliable tool calls need low-ish temperature plus reasoning to plan the steps. Thinking on so the agent loop is deliberate, not reckless.</div>
+        <div class="prompt-ref"><b>Prompt:</b> Core template + "Agent Skills" append — see Prompts below.</div>
+      </div>
+    </details>
+
+    <details class="task-card">
+      <summary><span class="tag" style="background:var(--g-green)"></span>Mobile Actions / Tiny Garden<span class="sub">Temp 0.1 · CPU</span><span class="plus">+</span></summary>
+      <div class="body">
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Max Tokens</div><div class="v">512</div></div>
+          <div class="stat"><div class="k">Top-K</div><div class="v">10</div></div>
+          <div class="stat"><div class="k">Top-P</div><div class="v">0.9</div></div>
+          <div class="stat hl"><div class="k">Temp</div><div class="v" style="color:var(--g-green)">0.1</div></div>
+          <div class="stat"><div class="k">Accel</div><div class="v">CPU</div></div>
+          <div class="stat"><div class="k">Thinking</div><div class="v">Off</div></div>
+          <div class="stat"><div class="k">Spec Decode</div><div class="v">Off</div></div>
+        </div>
+        <div class="rationale"><b>Why:</b> FunctionGemma 270M outputs one structured call — keep it near-deterministic with a tiny token budget. The model is tiny, so CPU is fine and easy on battery.</div>
+        <div class="prompt-ref"><b>Prompt:</b> Core template + "Mobile Actions / Tiny Garden" append — see Prompts below.</div>
+      </div>
+    </details>
+
+    <details class="task-card">
+      <summary><span class="tag" style="background:var(--g-blue)"></span>Translation / Travel<span class="sub">Temp 0.2 · GPU · Thinking Off</span><span class="plus">+</span></summary>
+      <div class="body">
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Max Tokens</div><div class="v">1024</div></div>
+          <div class="stat"><div class="k">Top-K</div><div class="v">20</div></div>
+          <div class="stat"><div class="k">Top-P</div><div class="v">0.9</div></div>
+          <div class="stat hl"><div class="k">Temp</div><div class="v" style="color:var(--g-blue)">0.2</div></div>
+          <div class="stat"><div class="k">Accel</div><div class="v">GPU</div></div>
+          <div class="stat"><div class="k">Thinking</div><div class="v">Off</div></div>
+          <div class="stat"><div class="k">Spec Decode</div><div class="v">On</div></div>
+        </div>
+        <div class="rationale"><b>Why:</b> Low temperature keeps translations faithful, not creative. Thinking off for speed — you want the phrase, not an essay. Nudge temp up to ~0.4 only if you want more natural, less literal phrasing.</div>
+        <div class="prompt-ref"><b>Prompt:</b> Core template + "Cantonese / Mandarin translator" append — see Prompts below.</div>
+      </div>
+    </details>
+  </section>
+
+  <section class="block acc-green" id="benchmark">
+    <span class="eyebrow"><span class="pip"></span> Measure, don't guess</span>
+    <h2>Benchmark — tune to your phone</h2>
+    <p>The benchmark screen (<code class="inline">Models Management → ⋮ → Benchmark Model</code>) is the one place you can turn "GPU or CPU? which model?" into a real number. Set the sliders to mimic a task's <em>token shape</em>, run it on GPU, then CPU, and compare. Its four knobs map to actual inference physics:</p>
+    <div class="grid g2">
+      <div class="mini glow">
+        <h4><span class="ico" style="background:var(--g-blue)">📥</span> Prefill tokens</h4>
+        <p>How fast the model <strong>reads your input</strong> — prompt, context, image/audio tokens, tool schemas. Parallel &amp; compute-heavy, so <strong>GPU usually wins</strong>. This is your time-to-first-token.</p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-green)">📤</span> Decode tokens</h4>
+        <p>How fast it <strong>writes output</strong>, one token at a time. Memory-bandwidth-bound — the streaming speed you actually feel. Long code &amp; transcripts live here.</p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-yellow)">🔁</span> Number of runs</h4>
+        <p>Repeats, for a stable median. <strong>3</strong> = quick read, <strong>5</strong> = confident. More runs = more heat &amp; battery, so keep it low for casual checks.</p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-red)">⚙️</span> Accelerator</h4>
+        <p>The thing you're A/B testing. Run identical settings on <strong>GPU then CPU</strong> and compare medians — the winner flips with model size and task.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:22px">Benchmark presets — match the task shape</h3>
+    <p>Set prefill/decode to roughly mirror the real task, then read the result straight into the <strong>Accel</strong> field of the task cards above.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Real task</th><th>Prefill</th><th>Decode</th><th>Runs</th><th>What to watch</th></tr></thead>
+        <tbody>
+          <tr><td>AI Chat (casual)</td><td>128</td><td>256</td><td>5</td><td>Time-to-first-token + decode t/s (snappiness)</td></tr>
+          <tr><td>AI Chat + Thinking</td><td>256</td><td>1024</td><td>3</td><td>Decode t/s — Thinking Mode balloons the output</td></tr>
+          <tr><td>Prompt Lab (code)</td><td>512</td><td>1024</td><td>3</td><td>Both, plus peak memory</td></tr>
+          <tr><td>Ask Image</td><td>512</td><td>128</td><td>3</td><td>Prefill t/s + memory — <strong>GPU wins big</strong></td></tr>
+          <tr><td>Audio Scribe</td><td>128</td><td>1024</td><td>3</td><td><em>Sustained</em> decode t/s + throttling</td></tr>
+          <tr><td>Agent Skills</td><td>768</td><td>256</td><td>3</td><td>Prefill t/s — tool schemas re-fed every turn</td></tr>
+          <tr><td>Mobile Actions / Tiny Garden (270M)</td><td>128</td><td>64</td><td>5</td><td>Confirm <strong>CPU ≈ GPU → use CPU</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.85rem;color:var(--ink-faint);margin-top:10px">Keep prefill + decode under the model's window — the screen warns you (e.g. "512 vs 4000").</p>
+
+    <div class="callout warn">
+      <h4>🌡️ The throttle test</h4>
+      <p style="margin:0">Run the <em>same</em> benchmark twice, back-to-back. If run 2 is noticeably slower, your phone is <strong>thermally throttling</strong> — so long transcriptions and agent loops will degrade over time even when the first burst looks fast. Sustained speed matters more than peak.</p>
+    </div>
+    <div class="callout info">
+      <h4>⚙️ GPU isn't always the winner</h4>
+      <p style="margin:0">GPU has spin-up overhead that makes it <em>lose</em> on the 270M model and very short chats — which is exactly why the app lets you benchmark E4B on <strong>CPU</strong>. Never assume; test both.</p>
+    </div>
+    <div class="callout tip">
+      <h4>🧵 32K context is a trap</h4>
+      <p style="margin:0">Gemma 4 E2B supports up to 32K context, but <em>prefilling</em> that many tokens on-device is brutally slow and memory-hungry. Keep contexts lean, and watch peak memory against model size (E4B 3.66&nbsp;GB · 3n-E2B 3.39&nbsp;GB · E2B 2.59&nbsp;GB).</p>
+    </div>
+  </section>
+
+  <section class="block acc-yellow" id="glossary">
+    <span class="eyebrow"><span class="pip"></span> Plain-English</span>
+    <h2>Parameter glossary</h2>
+    <div class="callout info">
+      <h4>🧠 The one thing to remember</h4>
+      <p style="margin:0"><strong>Temperature reshapes the probability distribution BEFORE filtering; Top-K / Top-P decide WHICH tokens are eligible AFTER.</strong> Temperature changes how flat or peaky the odds are; Top-K/Top-P then trim the list of candidates the model may pick from.</p>
+    </div>
+
+    <details class="acc"><summary><span class="tag" style="background:var(--g-blue)"></span>Max Tokens<span class="plus">+</span></summary><div class="body">The ceiling on how long a single response can be. Higher = room for full code files or long transcripts, but slower and more memory. Lower = snappier, forces brevity. Set it to the longest output you realistically need for that task.</div></details>
+
+    <details class="acc"><summary><span class="tag" style="background:var(--g-red)"></span>Top-K<span class="plus">+</span></summary><div class="body">Keep only the K most-likely next tokens, then sample among them. <b>Low K (1–20)</b> = focused, safe, repetitive-leaning. <b>High K (40–64)</b> = more variety and surprise. K=1 is greedy (always the single top token).</div></details>
+
+    <details class="acc"><summary><span class="tag" style="background:var(--g-green)"></span>Top-P (nucleus)<span class="plus">+</span></summary><div class="body">Keep the smallest set of tokens whose probabilities add up to P, then sample among them. <b>0.9</b> is a solid default; lower tightens focus, higher (0.95–0.99) loosens it. Works alongside Top-K — the stricter of the two wins.</div></details>
+
+    <details class="acc"><summary><span class="tag" style="background:var(--g-yellow)"></span>Temperature<span class="plus">+</span></summary><div class="body">The creativity dial. <b>0–0.3</b> = precise, factual, deterministic (code, transcription, function calls). <b>0.7–0.9</b> = natural, conversational. <b>~1.0–1.1</b> = wild, creative, less predictable — the practical ceiling for small on-device models, which fall apart above it. It stretches or flattens the odds <i>before</i> Top-K/Top-P filter.</div></details>
+
+    <details class="acc"><summary><span class="tag" style="background:var(--g-blue)"></span>Accelerator (CPU / GPU)<span class="plus">+</span></summary><div class="body">Which chip runs the model. <b>GPU</b> is usually faster for larger models and worth it on the iPhone 17; <b>CPU</b> can be steadier for tiny models and lighter on heat/battery. Benchmark both — the winner depends on the model.</div></details>
+
+    <details class="acc"><summary><span class="tag" style="background:var(--g-green)"></span>Speculative Decoding<span class="plus">+</span></summary><div class="body">A speed trick: a small "draft" guesses several tokens ahead and the main model verifies them in one pass, so you get more tokens/sec with identical output. On <b>Gemma 4 it uses native Multi-Token Prediction (MTP)</b> — toggle it with <code class="inline">"Support speculative decoding"</code> in config. Free speed for text; leave off for vision/audio where it doesn't apply.</div></details>
+
+    <details class="acc"><summary><span class="tag" style="background:var(--g-red)"></span>Enable Thinking<span class="plus">+</span></summary><div class="body">Lets the model reason step-by-step before answering (Gemma 4's Thinking Mode). <b>On</b> for hard reasoning, code, agent planning — better answers, slower. <b>Off</b> for casual chat, transcription, quick actions — faster, less overthinking.</div></details>
+  </section>
+
+  <section class="block acc-multi" id="prompts">
+    <span class="eyebrow"><span class="pip"></span> Tap-and-hold to copy</span>
+    <h2>System prompt library</h2>
+    <p>Paste one of these into the model's system-prompt field. Start with the <strong>Core template</strong>, then add a task-specific append line below it when you switch tiles. To copy: tap and hold inside a code block, then <strong>Select All → Copy</strong>.</p>
+
+    <div class="prompt-card glow">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-blue)"></span><h4>Core template — identity + behavior</h4></div>
+      <pre><code>You are a fast, private, on-device AI assistant running locally on my iPhone via Google AI Edge Gallery. You have no internet access — never claim to browse, fetch, or look anything up online. Work only from what I give you and what you already know.
+
+BEHAVIOR
+- Be direct and concise. Lead with the answer, then the reasoning only if it helps.
+- If you are unsure, or a request needs live/online data, say so plainly instead of guessing or inventing sources.
+- Match my level: skip filler and don't over-explain the basics unless I ask.
+- When I ask for code, return complete, runnable snippets — no placeholders, no "TODO".
+- Format with light Markdown (short lists, code fences) when it makes the answer clearer.
+- Everything stays on this device, so be candid, specific, and useful.</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-green)"></span><h4>Lightweight alternative — low-maintenance</h4></div>
+      <pre><code>You are a concise, private, on-device assistant with no internet access. Answer directly, admit uncertainty, and never invent facts or sources. Keep it short unless I ask for more.</code></pre>
+    </div>
+
+    <div class="callout info">
+      <h4>📏 Match the prompt to the model size</h4>
+      <p style="margin:0">Long system prompts eat context and can <em>dilute</em> instruction-following on small models. On <strong>E2B (or Gemma 3 1B)</strong> the lightweight prompt often behaves better than the full template; save the full Core template for <strong>E4B</strong>, where there's headroom to actually follow all of it.</p>
+    </div>
+
+    <h3 style="margin-top:26px">Task-specific append lines</h3>
+    <p>Add one of these <em>under</em> the Core template when you switch tasks.</p>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-yellow)"></span><h4>Prompt Lab — code</h4></div>
+      <pre><code>TASK: Act as a senior engineer. Return only complete, working code plus a one-line explanation. No placeholders, no "TODO". Prefer the standard library, handle the obvious edge cases, and note any assumptions in a short comment.</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-yellow)"></span><h4>Prompt Lab — creative</h4></div>
+      <pre><code>TASK: Prioritize originality, voice, and vivid detail over caution. Take creative risks, vary sentence rhythm, avoid clichés, and give me the piece itself — not a description of it.</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-red)"></span><h4>Ask Image</h4></div>
+      <pre><code>TASK: Answer strictly from what's visible in the image. Be specific about what you actually see; if something is ambiguous or cut off, say so. Don't invent text, brands, or details that aren't clearly present.</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-red)"></span><h4>Audio Scribe — transcription</h4></div>
+      <pre><code>TASK: Transcribe faithfully — preserve wording and speaker turns; keep fillers only if they carry meaning. Do not summarize or edit unless I ask. For translation, keep the original meaning and tone, and flag anything unclear as [inaudible].</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-blue)"></span><h4>Agent Skills — tool use</h4></div>
+      <pre><code>TASK: You may call the loaded tools/skills to complete the request. Plan the steps first, then call one tool at a time and wait for each result before the next. Only call a tool when it's actually needed — otherwise just answer. Confirm with me before any irreversible action.</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-green)"></span><h4>Mobile Actions / Tiny Garden — function call</h4></div>
+      <pre><code>TASK: Convert my request into exactly one structured function call using the available device actions. Fill every required argument from my message. If a required detail is missing, ask one short question instead of guessing. Do nothing beyond the single requested action.</code></pre>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head"><span class="tag" style="background:var(--g-blue)"></span><h4>Cantonese / Mandarin translator — travel</h4></div>
+      <pre><code>TASK: Be my offline Cantonese/Mandarin travel translator.
+- Default target is Cantonese (Hong Kong). If I say "Mandarin", switch.
+- For each phrase give three lines: (1) the translation in characters, (2) romanization — Jyutping with tone numbers for Cantonese, Hanyu Pinyin for Mandarin, (3) a short natural back-translation so I can sanity-check the meaning.
+- Default to a polite register. Flag anything that would sound rude, too casual, or is easy to mispronounce into a different word.
+- If there's no clean local equivalent, say so and give the closest natural phrasing instead of a literal word-for-word.</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <h4>ℹ️ Not a bug: Agent Skills' default prompt</h4>
+      <p style="margin:0">When <strong>no MCP tools are loaded</strong>, Agent Skills automatically switches to a built-in <em>"skills only"</em> default system prompt. That's expected behavior — if your custom prompt seems to vanish there, load a tool/skill and it comes back.</p>
+    </div>
+  </section>
+
+  <section class="block acc-green glow" id="skills">
+    <span class="eyebrow"><span class="pip"></span> Extend the model</span>
+    <h2>Agent Skills — three tiers &amp; what to build</h2>
+    <p>Agent Skills pairs a <strong>planner</strong> (E2B/E4B, which reasons) with a <strong>function-caller</strong> (FunctionGemma, which emits the tool call) — that's the "2 models" on the tile. Don't just load an MCP server and hope; think in three tiers. And keep every tool <strong>description terse</strong> — schemas are re-fed each turn, so they inflate prefill (see the Agent Skills row in Benchmark).</p>
+    <div class="grid g3">
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-blue)">1</span> Prompt personas</h4>
+        <p><strong>No MCP, zero setup.</strong> Reusable system prompts for recurring jobs. Highest ROI — start here today.</p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-yellow)">2</span> Local function tools</h4>
+        <p>Deterministic calculators/converters the model <em>calls</em> for things LLMs botch (arithmetic, unit conversion). Offline-safe pure functions.</p>
+      </div>
+      <div class="mini">
+        <h4><span class="ico" style="background:var(--g-green)">3</span> Multi-tile chains</h4>
+        <p>Workflows that hand output between tiles — Audio Scribe → summarize → flashcards, or Ask Image → extract → save.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px">🌏 Translation &amp; on-the-go — build these first</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Skill</th><th>Tier</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Cantonese / Mandarin translator</td><td><span class="pill rec">T1</span></td><td>Characters + Jyutping/Pinyin + back-translation. Persona is in the prompt library above.</td></tr>
+          <tr><td>Situational phrasebook</td><td><span class="pill rec">T1</span></td><td>"Give me taxi / pharmacy / restaurant / directions phrases for Hong Kong" — the 6–8 lines you'll actually need, on a card.</td></tr>
+          <tr><td>Allergy / emergency card</td><td><span class="pill rec">T1</span></td><td>"I'm allergic to shellfish" in large, polite Cantonese characters to show staff — offline, no fumbling.</td></tr>
+          <tr><td>Menu decoder</td><td><span class="pill add">T3</span></td><td>Ask Image (menu) → translate + romanize → flag spicy / meat / allergens. Point the camera, read dinner.</td></tr>
+          <tr><td>Sign &amp; label reader</td><td><span class="pill add">T3</span></td><td>Ask Image (sign, packaging, ticket machine) → translate → explain what to actually do.</td></tr>
+          <tr><td>Number &amp; bargaining helper</td><td><span class="pill cond">T1/2</span></td><td>Say prices &amp; quantities in Cantonese, count money, haggle politely at the market.</td></tr>
+          <tr><td>Offline currency + tip calc</td><td><span class="pill cond">T2</span></td><td>Static HKD↔USD rate you set; convert, split bills, tip — no signal needed.</td></tr>
+          <tr><td>MTR / transit helper</td><td><span class="pill rec">T1</span></td><td>"How do I ask for the right line and exit to X?" — station, interchange &amp; exit phrasing.</td></tr>
+          <tr><td>Timezone converter</td><td><span class="pill cond">T2</span></td><td>HK ↔ home — "what time is my 3pm call back home, and is it too late to text?"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:24px">🎒 Study, finance &amp; device</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Skill</th><th>Tier</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Climbing grade converter</td><td><span class="pill add">T2</span></td><td>YDS ↔ French ↔ V-scale ↔ Font. Models fumble this; a lookup table nails it.</td></tr>
+          <tr><td>Interest / loan / expense calc</td><td><span class="pill add">T2</span></td><td>Correct numbers for the private financial drafting — not hallucinated arithmetic.</td></tr>
+          <tr><td>Date-time → calendar extractor</td><td><span class="pill rec">T2/3</span></td><td>Parse "dinner Thu 7pm" into a clean struct and hand it to <strong>Mobile Actions</strong> (EventKit). Highest-leverage chain you can build.</td></tr>
+          <tr><td>Lecture → flashcards</td><td><span class="pill add">T3</span></td><td>Audio Scribe transcript → summarize → Anki-format Q&amp;A. Study from what you recorded.</td></tr>
+          <tr><td>Receipt logger</td><td><span class="pill add">T3</span></td><td>Ask Image (receipt) → extract line items → categorize → drop into your finance notes.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info">
+      <h4>🔑 Rule of thumb</h4>
+      <p style="margin:0">Do the <strong>T1 personas today</strong> — they're just prompts. Build a <strong>T2 tool</strong> only when the model keeps getting the same thing wrong (numbers, grades, rates). Save <strong>T3 chains</strong> for the two or three workflows you actually repeat every week.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  Gemma 4 · AI Edge Gallery field guide — offline, no-JavaScript twin. Built to open in iOS Quick Look / Files.<br/>
+  Feature &amp; repo details: github.com/google-ai-edge/gallery. Config values are starting points — benchmark &amp; tune on your own device.
+</footer>
+
+</body>
+</html>
